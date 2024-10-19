@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>OmniRobotSoccer</class>
+ <widget class="QMainWindow" name="OmniRobotSoccer">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1280</width>
+    <height>720</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1280</width>
+    <height>720</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Robot Soccer Registro</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Rectangle 160.png</normaloff>Rectangle 160.png</iconset>
+  </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
+  </property>
+  <widget class="QWidget" name="Vista1">
+   <widget class="QFrame" name="RegistroVisitantes">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>640</width>
+      <height>720</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(130, 120, 185)</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QFrame" name="LabelVisitantes">
+     <property name="geometry">
+      <rect>
+       <x>45</x>
+       <y>40</y>
+       <width>550</width>
+       <height>122</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: #4e486f;
+justify-content: &quot;center&quot;;
+color: white;
+border-radius: 20px;
+/*border-bottom: 3px solid rgba(0, 0, 0, 0.2);
+border-right: 3px solid rgba(0, 0, 0, 0.2);*/</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="titulo_visistantes">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>20</y>
+        <width>391</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 60pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';</string>
+      </property>
+      <property name="text">
+       <string>Visitantes</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="panel_registro_p1">
+     <property name="geometry">
+      <rect>
+       <x>70</x>
+       <y>190</y>
+       <width>500</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: #4e486f;
+color: white;
+border-radius: 20px;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_p1">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>60</y>
+        <width>141</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font: 60pt &quot;MS Shell Dlg 2&quot;;*/
+font: 60pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';
+</string>
+      </property>
+      <property name="text">
+       <string>P1</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="nombre_p1">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>70</y>
+        <width>121</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font0: 18pt &quot;MS Shell Dlg 2&quot;;*/
+font: 20pt &quot;Berlin Sans FB&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Nombre</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_p1">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>120</y>
+        <width>270</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: black;
+font: 14pt &quot;MS Shell Dlg 2&quot;;
+background-color: white;
+border-radius: 8px;</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="panel_registro_p2">
+     <property name="geometry">
+      <rect>
+       <x>70</x>
+       <y>410</y>
+       <width>500</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: #4e486f;
+color: white;
+border-radius: 20px;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_p2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>60</y>
+        <width>141</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font: 60pt &quot;MS Shell Dlg 2&quot;;*/
+font: 60pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';
+</string>
+      </property>
+      <property name="text">
+       <string>P2</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="nombre_p2">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>70</y>
+        <width>121</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font0: 18pt &quot;MS Shell Dlg 2&quot;;*/
+font: 20pt &quot;Berlin Sans FB&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Nombre</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_p2">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>120</y>
+        <width>270</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: black;
+font: 14pt &quot;MS Shell Dlg 2&quot;;
+background-color: white;
+border-radius: 8px;</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QPushButton" name="boton_registrar">
+     <property name="geometry">
+      <rect>
+       <x>209</x>
+       <y>650</y>
+       <width>220</width>
+       <height>50</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QWidget#boton_registrar{
+background-color: #4e486f;
+color: white;
+font: 16pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';
+border-radius: 8px;
+}
+
+QWidget#boton_registrar:hover {
+background-color: #343049;
+}</string>
+     </property>
+     <property name="text">
+      <string>REGISTRAR</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="advertencia_registro">
+     <property name="geometry">
+      <rect>
+       <x>250</x>
+       <y>620</y>
+       <width>141</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 255, 255, 0.25);
+border-radius: 8px;
+color: red;
+font: 10pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';
+</string>
+     </property>
+     <property name="text">
+      <string>Registro No Válido</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="RegistroLocales">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>0</y>
+      <width>1280</width>
+      <height>720</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>1280</width>
+      <height>720</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>1280</width>
+      <height>720</height>
+     </size>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(130, 120, 185)</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QFrame" name="LabelLocales">
+     <property name="geometry">
+      <rect>
+       <x>34</x>
+       <y>40</y>
+       <width>561</width>
+       <height>122</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: #4e486f;
+color: white;
+border-radius: 20px;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>541</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font: 52pt &quot;MS Shell Dlg 2&quot;;*/
+font: 60pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';
+</string>
+      </property>
+      <property name="text">
+       <string>Locales</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="LabelVisitantes_5">
+     <property name="geometry">
+      <rect>
+       <x>66</x>
+       <y>200</y>
+       <width>500</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: #4e486f;
+color: white;
+border-radius: 20px;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>60</y>
+        <width>141</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font: 60pt &quot;MS Shell Dlg 2&quot;;*/
+font: 60pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';
+</string>
+      </property>
+      <property name="text">
+       <string>M1</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>70</y>
+        <width>121</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font0: 18pt &quot;MS Shell Dlg 2&quot;;*/
+font: 20pt &quot;Berlin Sans FB&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Nombre</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_3">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>120</y>
+        <width>270</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: black;
+font: 14pt &quot;MS Shell Dlg 2&quot;;
+background-color: white;
+border-radius: 8px;</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="LabelVisitantes_6">
+     <property name="geometry">
+      <rect>
+       <x>66</x>
+       <y>420</y>
+       <width>500</width>
+       <height>200</height>
+      </rect>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: #4e486f;
+color: white;
+border-radius: 20px;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>60</y>
+        <width>141</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font: 60pt &quot;MS Shell Dlg 2&quot;;*/
+font: 60pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';
+</string>
+      </property>
+      <property name="text">
+       <string>M2</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>70</y>
+        <width>121</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/*font0: 18pt &quot;MS Shell Dlg 2&quot;;*/
+font: 20pt &quot;Berlin Sans FB&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Nombre</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="lineEdit_4">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>120</y>
+        <width>270</width>
+        <height>30</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: black;
+font: 14pt &quot;MS Shell Dlg 2&quot;;
+background-color: white;
+border-radius: 8px;</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="tapadera">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>640</width>
+       <height>720</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgba(0, 0, 0, 0.5); 
+backdrop-filter: blur(25px);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QFrame" name="LabelVisitantes_7">
+      <property name="geometry">
+       <rect>
+        <x>70</x>
+        <y>240</y>
+        <width>500</width>
+        <height>200</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color:  rgb(255, 255, 255, 0.25);
+color: white;
+border-radius: 20px;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_11">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>60</y>
+         <width>471</width>
+         <height>81</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">/*font: 60pt &quot;MS Shell Dlg 2&quot;;*/
+font: 48pt &quot;Berlin Sans FB&quot;;
+qproperty-alignment: 'AlignCenter';
+background-color: none;
+</string>
+       </property>
+       <property name="text">
+        <string>No Disponible</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

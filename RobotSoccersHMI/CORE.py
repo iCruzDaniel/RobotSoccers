@@ -1,0 +1,2 @@
+#from logica import *
+

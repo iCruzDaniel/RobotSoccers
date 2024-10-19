@@ -1,0 +1,4 @@
+numpy
+serial
+opencv-contrib-python
+pyqt5
