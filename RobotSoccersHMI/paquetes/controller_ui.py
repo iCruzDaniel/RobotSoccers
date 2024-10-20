@@ -7,6 +7,7 @@ import cv2
 import sys
 
 # Paquetes desarrollados
+from serialBridge import *
 from vent_cam import *
 from oculus import *
 from panel_control import *
@@ -45,27 +46,30 @@ vent_registros.boton_registrar.clicked.connect(registrar_visitantes)
 
 """---------------------------------- cntrl: VENTANA DE JUEGO ------------------------------------------"""
 # ---  config Iniciales
-#Inicializamos controlador de partida}
+#Inicializamos controlador de partida
 marcador = Marcador("visitantes", "Locales", vent_juego.puntaje_marcador)  #Objeto marcador
 cronometro = Cronometro(label=vent_juego.cronometro) #Objeto Cronómetro
 
 camara = Oculus() #Objeto para ventana visualizadora de la camara
+
+vent_juego.menu.hide() #Esconder el menu principal
+
 # --- funciones
 
 #funcion para modificar el estado de baterías
 def baterias(m1, m2):
 
     estados = { #Posibles estados de las baterías: 0% 20% 40% 60% 80% 100%
-        0: QPixmap('../vistas/BAT0.png'),
-        20: QPixmap('../vistas/BAT20.png'),
-        40: QPixmap('../vistas/BAT40.png'),
-        60: QPixmap('../vistas/BAT60.png'),
-        80: QPixmap('../vistas/BAT80.png'),
-        100: QPixmap('../vistas/BAT100.png')
+        0: QPixmap('../vistas/recursos/BAT0.png'),
+        20: QPixmap('../vistas/recursos/BAT20.png'),
+        40: QPixmap('../vistas/recursos/BAT40.png'),
+        60: QPixmap('../vistas/recursos/BAT60.png'),
+        80: QPixmap('../vistas/recursos/BAT80.png'),
+        100: QPixmap('../vistas/recursos/BAT100.png')
     }
 
     # Establecer los estados en cada uno de los labels correspondientes
-    vent_juego.bat_estado_m1.setPixmap(estados[m1])    
+    vent_juego.bat_estado_m1.setPixmap(estados[m1])
     vent_juego.bat_estado_m2.setPixmap(estados[m2])
     
 #Funcion para visualizar video
@@ -92,13 +96,30 @@ def panel_control(opc):
         2: cronometro.iniciar_partido,
         3: cronometro.detener_partido,
         4: cronometro.reiniciar_partido,
-        #5: marca-----------dor.     !!!FALTA EL MENÚ
+        5: vent_juego.menu.show
+
     }
     operaciones[opc]()
 
 
 #funcion tabla registro de goles (conectar al CORE)
 # ------------ marcador.anotar_gol(1)
+def corregirGol(equipo, num):
+    marcador.marcador[equipo] += num
+    if marcador.marcador[0] < 0: marcador.marcador[0] =0
+    if marcador.marcador[1] < 0: marcador.marcador[1] =0
+    marcador.label.setText(f"{marcador.marcador[0]} - {marcador.marcador[1]}")
+
+def refrescarPuertos():
+    if vent_juego.lista_puertos.count() != 0: 
+        vent_juego.lista_puertos.clear()
+    vent_juego.lista_puertos.addItems(list_ports())
+
+def conectarCOM():
+    pCOM = vent_juego.lista_puertos.currentText()
+
+    puerto = SerialConnection(pCOM)
+    print(f"conectado {pCOM}")
 
 # ------ botones
 #Panel de contrl
@@ -108,6 +129,16 @@ vent_juego.boton_detener.clicked.connect(lambda: panel_control(3))
 vent_juego.boton_reinicio.clicked.connect(lambda: panel_control(4))
 vent_juego.boton_menu.clicked.connect(lambda: panel_control(5))
 
+#Menú Botones
+vent_juego.boton_refrescar.clicked.connect(refrescarPuertos)
+vent_juego.boton_locales_mas.clicked.connect(lambda: corregirGol(0, 1))
+vent_juego.boton_locales_menos.clicked.connect(lambda: corregirGol(0, -1))
+vent_juego.boton_visitantes_mas.clicked.connect(lambda: corregirGol(1, 1))
+vent_juego.boton_visitantes_menos.clicked.connect(lambda: corregirGol(1, -1))
+
+# ------ señales
+#Menú señales
+vent_juego.lista_puertos.currentIndexChanged.connect(conectarCOM)
 """-------------------------------------- |||| -----------------------------------------------"""
 
 
@@ -119,10 +150,12 @@ vent_juego.boton_menu.clicked.connect(lambda: panel_control(5))
 if __name__ == "__main__":
     baterias(20, 60) # BateriaMaquina1: 20%,  BateriaMaquina1: 60%,  
     play_video()
+    #marcador.anotar_gol(0)
+
     #Motrar y ejecutar ventana
-    #vent_registros.show()
+    #-vent_registros.show()
     vent_juego.show()
-    #vent_simulacion.show()
-    #app.exec()
+    #-vent_simulacion.show()
+    #-app.exec()
 
     app.exec()

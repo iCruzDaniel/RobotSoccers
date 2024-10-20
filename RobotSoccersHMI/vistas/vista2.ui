@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OmniRobotSoccer</class>
- <widget class="QMainWindow" name="OmniRobotSoccer">
+ <class>RobotSoccer</class>
+ <widget class="QMainWindow" name="RobotSoccer">
   <property name="enabled">
    <bool>true</bool>
   </property>
@@ -29,6 +29,12 @@
    <size>
     <width>1280</width>
     <height>720</height>
+   </size>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>400</width>
+    <height>400</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -98,7 +104,7 @@ border-radius: 20px;</string>
         <x>0</x>
         <y>-1</y>
         <width>481</width>
-        <height>81</height>
+        <height>87</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0,0,0">
@@ -245,7 +251,7 @@ background-color: grey;
          </property>
          <property name="icon">
           <iconset>
-           <normaloff>menu 1.png</normaloff>menu 1.png</iconset>
+           <normaloff>recursos/menu 1.png</normaloff>recursos/menu 1.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -327,8 +333,7 @@ qproperty-alignment: 'AlignCenter';</string>
      <property name="styleSheet">
       <string notr="true">color: #343049;
 background-color: none;
-font: 18pt &quot;Berlin Sans FB&quot;;
-qproperty-alignment: 'AlignCenter';</string>
+font: 18pt &quot;Berlin Sans FB&quot;;</string>
      </property>
      <property name="text">
       <string>Panel de Control</string>
@@ -455,6 +460,133 @@ border-right: 3px solid rgba(0, 0, 0, 0.2);*/</string>
       <enum>QFrame::Raised</enum>
      </property>
     </widget>
+    <widget class="QDockWidget" name="menu">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>0</y>
+       <width>388</width>
+       <height>300</height>
+      </rect>
+     </property>
+     <property name="baseSize">
+      <size>
+       <width>400</width>
+       <height>400</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font: 11pt &quot;Berlin Sans FB&quot;;
+color: white;
+background-color: #b0a9d3;
+
+</string>
+     </property>
+     <property name="floating">
+      <bool>true</bool>
+     </property>
+     <property name="features">
+      <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable</set>
+     </property>
+     <property name="windowTitle">
+      <string>Menú</string>
+     </property>
+     <widget class="QWidget" name="dockWidgetContents">
+      <property name="baseSize">
+       <size>
+        <width>400</width>
+        <height>400</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <widget class="QWidget" name="formLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>369</width>
+         <height>340</height>
+        </rect>
+       </property>
+       <layout class="QFormLayout" name="formLayout">
+        <property name="verticalSpacing">
+         <number>10</number>
+        </property>
+        <item row="9" column="1">
+         <widget class="QPushButton" name="boton_locales_menos">
+          <property name="text">
+           <string>-</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <widget class="QPushButton" name="boton_locales_mas">
+          <property name="text">
+           <string>+</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Locales</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <widget class="QPushButton" name="boton_visitantes_mas">
+          <property name="text">
+           <string>+</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>Visitantes</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="1">
+         <widget class="QPushButton" name="boton_visitantes_menos">
+          <property name="text">
+           <string>-</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QComboBox" name="lista_puertos"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Puerto Serie</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0" colspan="2">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>CORRECIÓN LECTURA DE GOLES</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QPushButton" name="boton_refrescar">
+          <property name="text">
+           <string>Refrescar</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </widget>
     <zorder>vent_cam_frame</zorder>
     <zorder>vent_camara</zorder>
     <zorder>LabelVisitantes_3</zorder>
@@ -462,6 +594,7 @@ border-right: 3px solid rgba(0, 0, 0, 0.2);*/</string>
     <zorder>label_8</zorder>
     <zorder>label_9</zorder>
     <zorder>LabelVisitantes_7</zorder>
+    <zorder>menu</zorder>
    </widget>
    <widget class="QFrame" name="LadoDerecho">
     <property name="geometry">
