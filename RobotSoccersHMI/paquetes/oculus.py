@@ -48,7 +48,6 @@ class Oculus(QThread):
         return mask, res
 
 
-
     def run(self):
         self.hilo_corriendo = True
         cap = cv2.VideoCapture(0)
@@ -61,7 +60,6 @@ class Oculus(QThread):
 
         # Iniciar la captura de la cámara
         cap = cv2.VideoCapture(self.num_dispositivo)
-
 
         while self.hilo_corriendo:
             ret, frame = cap.read()
