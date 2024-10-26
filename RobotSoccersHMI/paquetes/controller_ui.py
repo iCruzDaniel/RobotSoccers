@@ -3,14 +3,20 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import cv2
+#import cv2
 import sys
 
 # Paquetes desarrollados
-from serialBridge import *
-from vent_cam import *
-from oculus import *
-from panel_control import *
+if __name__ == "__main__":
+    from serialBridge import *
+    from vent_cam import *
+    from oculus import *
+    from panel_control import *
+else:
+    from .serialBridge import *
+    from .vent_cam import *
+    from .oculus import *
+    from .panel_control import *
 
 
 #Inicializamos la aplicación
@@ -147,9 +153,10 @@ vent_juego.lista_puertos.currentIndexChanged.connect(conectarCOM)
 
 """-------------------------------------- |||| ----------------------------------------------"""
 
+play_video()
+
 if __name__ == "__main__":
     baterias(20, 60) # BateriaMaquina1: 20%,  BateriaMaquina1: 60%,  
-    play_video()
     #marcador.anotar_gol(0)
 
     #Motrar y ejecutar ventana
