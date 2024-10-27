@@ -46,7 +46,45 @@ class Oculus(QThread):
         res = cv2.bitwise_and(frame, frame, mask=mask)
         
         return mask, res
+    
+    # Dimensiones de las porterías dentro del ROI
+    porteria_ancho = 50  # Ajusta según el tamaño deseado de la portería
+    porteria_alto = int(area_alto * 0.2)  # Altura de la portería
 
+    def dibujar_porterias_y_determinar_proximidad(self, area_interes, objeto_centro):
+        """
+        Dibuja los cuadros izquierdo y derecho en el área de interés y determina la proximidad
+        del objeto rojo detectado con respecto a cada uno de estos cuadros.
+        """
+        # Coordenadas de las porterías (cuadros) en la ROI
+        porteria_izquierda_x = 10
+        porteria_izquierda_y = (self.area_alto - self.porteria_alto) // 2
+        porteria_derecha_x = self.area_ancho - self.porteria_ancho - 10
+        porteria_derecha_y = porteria_izquierda_y
+
+        # Dibujar el cuadro izquierdo en verde
+        cv2.rectangle(area_interes, (porteria_izquierda_x, porteria_izquierda_y),
+                      (porteria_izquierda_x + self.porteria_ancho, porteria_izquierda_y + self.porteria_alto), (0, 255, 0), 2)
+        
+        # Dibujar el cuadro derecho en rojo
+        cv2.rectangle(area_interes, (porteria_derecha_x, porteria_derecha_y),
+                      (porteria_derecha_x + self.porteria_ancho, porteria_derecha_y + self.porteria_alto), (0, 0, 255), 2)
+
+        # Calcular los centros de cada portería
+        centro_izquierda = (porteria_izquierda_x + self.porteria_ancho // 2, porteria_izquierda_y + self.porteria_alto // 2)
+        centro_derecha = (porteria_derecha_x + self.porteria_ancho // 2, porteria_derecha_y + self.porteria_alto // 2)
+
+        # Obtener la distancia euclidiana desde el objeto rojo detectado a cada cuadro
+        distancia_izquierda = np.linalg.norm(np.array(objeto_centro) - np.array(centro_izquierda))
+        distancia_derecha = np.linalg.norm(np.array(objeto_centro) - np.array(centro_derecha))
+
+        # Determinar cuál cuadro está más cerca
+        if distancia_izquierda < distancia_derecha:
+            return "izquierda"
+        else:
+            return "derecha"
+
+    
 
     def run(self):
         self.hilo_corriendo = True
@@ -111,17 +149,18 @@ class Oculus(QThread):
                     if M["m00"] != 0:
                         cx = int(M["m10"] / M["m00"])
                         cy = int(M["m01"] / M["m00"])
-                    
                         # Dibujar un círculo en el centro del objeto rojo
                         cv2.circle(area_interes, (cx, cy), 5, (0, 0, 0), -1)
-                        
                         # Mostrar las coordenadas en la ventana
                         cv2.putText(frame, f'({cx},{cy})', (self.area_inicio_x + cx, self.area_inicio_y + cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                    
+                        # Llamar a la función de proximidad y obtener el cuadro más cercano
+                        cuadro_cercano = self.dibujar_porterias_y_determinar_proximidad(area_interes, (cx, cy))
+                        cv2.putText(frame, f'Mas cerca del cuadro {cuadro_cercano}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
                 
                 # Dibujar el plano cartesiano en el área de interés
                 cv2.line(frame, (self.area_inicio_x, self.area_inicio_y + self.area_alto // 2), (self.area_inicio_x + self.area_ancho, self.area_inicio_y + self.area_alto // 2), (255, 255, 255), 2)  # Eje X
                 cv2.line(frame, (self.area_inicio_x + self.area_ancho // 2, self.area_inicio_y), (self.area_inicio_x + self.area_ancho // 2, self.area_inicio_y + self.area_alto), (255, 255, 255), 2)  # Eje Y
-                
                 # Dibujar el contorno de la ROI
                 cv2.rectangle(frame, (self.area_inicio_x, self.area_inicio_y), (self.area_inicio_x + self.area_ancho, self.area_inicio_y + self.area_alto), (255, 0, 0), 2)  # Cuadro azul
                 
