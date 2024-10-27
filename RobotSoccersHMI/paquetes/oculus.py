@@ -65,10 +65,10 @@ class Oculus(QThread):
     porteria_ancho = 50  # Ajusta según el tamaño deseado de la portería
     porteria_alto = int(area_alto * 0.2)  # Altura de la portería
 
-    def dibujar_porterias_y_determinar_proximidad(self, area_interes, objeto_centro):
+    def dibujar_porterias_y_determinar_proximidad(self, area_interes, ids, centros):
         """
-        Dibuja los cuadros izquierdo y derecho en el área de interés y determina la proximidad
-        del objeto rojo detectado con respecto a cada uno de estos cuadros.
+        Dibuja los cuadros izquierdo y derecho en el área de interés y determina
+        cuál marcador está más cerca de cada portería.
         """
         # Coordenadas de las porterías (cuadros) en la ROI
         porteria_izquierda_x = 10
@@ -80,7 +80,7 @@ class Oculus(QThread):
         cv2.rectangle(area_interes, (porteria_izquierda_x, porteria_izquierda_y),
                       (porteria_izquierda_x + self.porteria_ancho, porteria_izquierda_y + self.porteria_alto), (0, 255, 0), 2)
         
-        # Dibujar el cuadro derecho en azullll
+        # Dibujar el cuadro derecho en rojo
         cv2.rectangle(area_interes, (porteria_derecha_x, porteria_derecha_y),
                       (porteria_derecha_x + self.porteria_ancho, porteria_derecha_y + self.porteria_alto), (255, 0, 0), 2)
 
@@ -88,15 +88,30 @@ class Oculus(QThread):
         centro_izquierda = (porteria_izquierda_x + self.porteria_ancho // 2, porteria_izquierda_y + self.porteria_alto // 2)
         centro_derecha = (porteria_derecha_x + self.porteria_ancho // 2, porteria_derecha_y + self.porteria_alto // 2)
 
-        # Obtener la distancia euclidiana desde el objeto rojo detectado a cada cuadro
-        distancia_izquierda = np.linalg.norm(np.array(objeto_centro) - np.array(centro_izquierda))
-        distancia_derecha = np.linalg.norm(np.array(objeto_centro) - np.array(centro_derecha))
+        # Variables para almacenar el marcador más cercano a cada portería
+        id_mas_cercano_izquierda = None
+        id_mas_cercano_derecha = None
+        distancia_min_izquierda = float('inf')
+        distancia_min_derecha = float('inf')
 
-        # Determinar cuál cuadro está más cerca
-        if distancia_izquierda < distancia_derecha:
-            return "izquierda" #local
-        else:
-            return "derecha" # rival
+        # Iterar sobre cada marcador detectado
+        for i, centro in enumerate(centros):
+            # Calcular la distancia del marcador a cada portería
+            distancia_izquierda = np.linalg.norm(np.array(centro) - np.array(centro_izquierda))
+            distancia_derecha = np.linalg.norm(np.array(centro) - np.array(centro_derecha))
+            
+            # Verificar si es el más cercano a la portería izquierda
+            if distancia_izquierda < distancia_min_izquierda:
+                distancia_min_izquierda = distancia_izquierda
+                id_mas_cercano_izquierda = ids[i][0]  # ID del marcador
+
+            # Verificar si es el más cercano a la portería derecha
+            if distancia_derecha < distancia_min_derecha:
+                distancia_min_derecha = distancia_derecha
+                id_mas_cercano_derecha = ids[i][0]  # ID del marcador
+
+        # Devolver el marcador más cercano a cada portería y sus distancias
+        return id_mas_cercano_izquierda, distancia_min_izquierda, id_mas_cercano_derecha, distancia_min_derecha
 
     
 
@@ -134,11 +149,12 @@ class Oculus(QThread):
                 # Dibujar los marcadores detectados
                 if ids is not None:
                     aruco.drawDetectedMarkers(frame, corners, ids)
-                    
+                    centros =[] #array para la funcion
                     for marker_corners in corners:
                         # Calcular el centro del marcador
                         center = np.mean(marker_corners[0], axis=0)
                         cx, cy = int(center[0]), int(center[1])
+                        centros.append((cx, cy)) #array para la funcion
                         
                         # Dibujar un círculo en el centro del marcador
                         cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
@@ -146,10 +162,19 @@ class Oculus(QThread):
                         # Mostrar las coordenadas del marcador ArUco
                         cv2.putText(frame, f'({cx},{cy})', (cx + 5, cy - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-                        # Llamar a la función de proximidad y obtener el cuadro más cercano
+                        """ # Llamar a la función de proximidad y obtener el cuadro más cercano
                         cuadro_cercano = self.dibujar_porterias_y_determinar_proximidad(area_interes, (cx, cy))
                         cv2.putText(frame, f'Mas cerca del cuadro {cuadro_cercano}', (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-                        print (f"el jugador esta en: {cuadro_cercano}")
+                        print (f"el jugador esta en: {cuadro_cercano}") """
+                     # Llamar a la función de proximidad y obtener los marcadores más cercanos a cada portería
+                    id_izquierda, dist_izquierda, id_derecha, dist_derecha = self.dibujar_porterias_y_determinar_proximidad(area_interes, ids, centros)
+                    
+                    # Mostrar el ID y la distancia de los marcadores más cercanos en pantalla
+                    cv2.putText(frame, f'Más cercano a izquierda: ID {id_izquierda} ({dist_izquierda:.2f} px)', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                    cv2.putText(frame, f'Más cercano a derecha: ID {id_derecha} ({dist_derecha:.2f} px)', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                    print("id izq=",id_izquierda, dist_izquierda, "id dere=", id_derecha, dist_derecha)    
+
+
 
                 
                 # Detectar el color rojo en el área de interés
