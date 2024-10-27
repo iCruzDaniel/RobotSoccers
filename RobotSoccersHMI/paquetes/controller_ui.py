@@ -31,7 +31,6 @@ vent_simulacion = uic.loadUi("../vistas/vista3.ui")
 """------------------------------------cntrl: VENTANA REGISTROS--------------------------------------------"""
 # ---  config Iniciales
 vent_registros.advertencia_registro.hide()
-
 # --- funciones
 def registrar_visitantes(): #registrar a los visitantes
     nombre_p1 = vent_registros.lineEdit_p1.text()
