@@ -5,8 +5,8 @@ AF_DCMotor Motor3(3);
 AF_DCMotor Motor4(4);
 
 #include <SoftwareSerial.h>
-//SoftwareSerial WMBT(A4, A5);  // RX, TX recorder que se cruzan
-SoftwareSerial WMBT(10, 11);  // RX, TX recorder que se cruzan
+SoftwareSerial WMBT(A4, A5);  // RX, TX recorder que se cruzan
+//SoftwareSerial WMBT(10, 11);  // RX, TX recorder que se cruzan
 
 
 #include "VAR.h"
@@ -216,49 +216,52 @@ void loop() {
 
   // Selección de movimientos
   switch (movimiento) {
-    case 'w':
+    case 'W':3.
+    
       adelante();
+      delay(100);
       WMBT.println("Adelante");
       break;
-    case 's':
+    case 'S':
       retroceder();
       WMBT.println("Reversa");
       break;
-    case 'a':
+    case 'A':
       izquierda();
       WMBT.println("Izquierda");
       break;
-    case 'd':
+    case 'D':
       derecha();
       WMBT.println("Derecha");
       break;
-    case 'z':
+    case 'Z':
       diagonal1();
       WMBT.println("diagonal 1");
       break;
-    case 'q':
+    case 'Q':
       diagonal2();
       WMBT.println("diagonal 2");
       break;
-    case 'e':
+    case 'E':
       diagonal3();
       WMBT.println("diagonal 3");
       break;
-    case 'c':
+    case 'C':
       diagonal4();
       WMBT.println("diagonal 4");
       break;
-    case 'f':
-      giroDerecha();
+    case 'F':
+      giroHorario();
       WMBT.println("giro Derecha");
       break;
-    case 'x':
-      giroIzquierda();
+    case 'X':
+      giroAntihorario();
       WMBT.println("giro Izquierda");
       break;
-    case 'p':
+    case 'P':
       detener();
       WMBT.println("Detener");
       break;
   }
+  movimiento = ' ';
 }

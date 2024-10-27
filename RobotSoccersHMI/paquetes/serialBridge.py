@@ -63,12 +63,12 @@ class SerialConnection:
 # Ejemplo de uso
 if __name__ == "__main__":
 
-    serial_obj = SerialConnection(port='COM8', baudrate=9600)
+    serial_obj = SerialConnection(port='COM9', baudrate=9600)
     #serial_obj.connect()
 
     # Llama a la función para obtener la lista de puertos
-    ports = serial_obj.list_ports()
-    print(ports)
+    #ports = serial_obj.list_ports()
+    #print(ports)
     
     # Enviar datos
     """
@@ -82,10 +82,13 @@ if __name__ == "__main__":
     [0] Cuerto dígito despues de la última letra--> indicador de pateo maquina 2
     | --> Indicador de que se acabó la trama
     """
-    serial_obj.send_data("TA1110D7770|") # Trama T
+
+    #for i in range(10):
+    serial_obj.send_data("TW1110D7770|") # Trama T
+    time.sleep(0.5)
 
     # Recibir datos
-    #received = serial_obj.receive_data()
+    received = serial_obj.receive_data()
     
     # Desconectar
     serial_obj.disconnect()
