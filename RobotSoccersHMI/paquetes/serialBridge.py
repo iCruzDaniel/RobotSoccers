@@ -64,7 +64,8 @@ class SerialConnection:
 if __name__ == "__main__":
 
     serial_obj = SerialConnection(port='COM9', baudrate=9600)
-    #serial_obj.connect()
+    serial_obj.connect()
+    time.sleep(1)
 
     # Llama a la función para obtener la lista de puertos
     #ports = serial_obj.list_ports()
@@ -83,12 +84,21 @@ if __name__ == "__main__":
     | --> Indicador de que se acabó la trama
     """
 
-    #for i in range(10):
-    serial_obj.send_data("TW1110D7770|") # Trama T
-    time.sleep(0.5)
-
-    # Recibir datos
+    #serial_obj.send_data("TW1110D7770|") # Trama T
+    trama = "TP1110D7770|"
+   # for i in range(2):
+        #time.sleep(0.5)
+    serial_obj.send_data(trama) # Trama T
     received = serial_obj.receive_data()
+    
+    band = 0
+    while received != 0 and band <= 1:
+        serial_obj.send_data(trama) # Trama T
+        received = serial_obj.receive_data()
+        band +=1
+        
+    received = 0
+    # Recibir datos
     
     # Desconectar
     serial_obj.disconnect()
