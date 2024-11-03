@@ -5,8 +5,8 @@ AF_DCMotor Motor3(3);
 AF_DCMotor Motor4(4);
 
 #include <SoftwareSerial.h>
-//SoftwareSerial WMBT(A4, A5);  // RX, TX recorder que se cruzan
-SoftwareSerial WMBT(10, 11);  // RX, TX recorder que se cruzan
+SoftwareSerial WMBT(A4, A5);  // RX, TX recorder que se cruzan
+//SoftwareSerial WMBT(10, 11);  // RX, TX recorder que se cruzan
 
 
 #include "VAR.h"
@@ -14,7 +14,7 @@ SoftwareSerial WMBT(10, 11);  // RX, TX recorder que se cruzan
 int M = MAQUINA_1;  //Cambiar este valor dependiendo de la maquina que se vaya a programar...
 
 //Char recibido = 0;
-char tramaRecibida[14] = {};
+String tramaRecibida;
 //{movimiento_m1(1)|pwm_m1(3)|palanca_m1(1)|movimiento_m2(1)|pwm_m2(3)|palanca_m2(1)|'\n'} = tamaño14
 // moviento->[0] | pwm/100->[1] pwm/10->[2] pwm->[3] | palanca->[4]
 
@@ -187,10 +187,50 @@ void setup() {
 
 void loop() {
 
-  int band = 0;
+
+
+
+  // Limpiar el buffer antes de leer
+  while (WMBT.available() > 0) {
+    WMBT.read();
+  }
+
+  // Enviar la trama desde tu programa principal
+ //Serial.print("Hola, Arduino!");
+
+  // Leer la trama completa en el Arduino
+if (WMBT.available() > 0) {
+  tramaRecibida = WMBT.readStringUntil('|');  // Leer hasta un salto de línea
+  Serial.print("Comando recibido (trama completa): ");
+  Serial.println(tramaRecibida);  // Imprime la trama completa en una sola línea
+  if (tramaRecibida[0] == 'T') {
+
+    movimiento = tramaRecibida[1 + M];
+    vel = 100 * (tramaRecibida[M + 2] - '0') + 10 * (tramaRecibida[M + 3] - '0') + (tramaRecibida[M + 4] - '0');
+    palanca = convertirCharABool(tramaRecibida[M + 5]);
+
+    Serial.print("Trama separada: ");
+    Serial.print(movimiento);
+    Serial.print(" ");
+    Serial.print(vel);
+    Serial.print(" ");
+    Serial.println(palanca);  //false == 0
+
+
+    WMBT.flush();
+    WMBT.println("R");
+  }
+  else {
+    WMBT.flush();
+  }
+}
+
+
+  /*int band = 0;
   while (WMBT.available()) {
-    delay(10);
+    delay(50);
     char recibido = WMBT.read();
+    WMBT.flush();
     tramaRecibida[band] = recibido;  // Acumula los caracteres en la trama
     // Si la trama ha terminado (por ejemplo, con un salto de línea '\n')
     if (recibido == '|') {
@@ -212,53 +252,55 @@ void loop() {
       band = 0;
     }
     band += 1;
-  }
+  }*/
 
   // Selección de movimientos
   switch (movimiento) {
-    case 'w':
+    case 'W':
       adelante();
+      //delay(100);
       WMBT.println("Adelante");
       break;
-    case 's':
+    case 'S':
       retroceder();
       WMBT.println("Reversa");
       break;
-    case 'a':
+    case 'A':
       izquierda();
       WMBT.println("Izquierda");
       break;
-    case 'd':
+    case 'D':
       derecha();
       WMBT.println("Derecha");
       break;
-    case 'z':
+    case 'Z':
       diagonal1();
       WMBT.println("diagonal 1");
       break;
-    case 'q':
+    case 'Q':
       diagonal2();
       WMBT.println("diagonal 2");
       break;
-    case 'e':
+    case 'E':
       diagonal3();
       WMBT.println("diagonal 3");
       break;
-    case 'c':
+    case 'C':
       diagonal4();
       WMBT.println("diagonal 4");
       break;
-    case 'f':
-      giroDerecha();
+    case 'F':
+      giroHorario();
       WMBT.println("giro Derecha");
       break;
-    case 'x':
-      giroIzquierda();
+    case 'X':
+      giroAntihorario();
       WMBT.println("giro Izquierda");
       break;
-    case 'p':
+    case 'P':
       detener();
       WMBT.println("Detener");
       break;
   }
+  movimiento = ' ';
 }
