@@ -142,7 +142,24 @@ class Oculus(QThread):
             return id1, distancia_id1
         else:
             return id2, distancia_id2
-
+        
+    def angulo_frente(self, frente_robot, robot_pos, pelota_pos):
+        #Vector desde el robot hacia la pelota
+        vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
+        if np.linalg.norm(vector_pelota) == 0: #Evitar divisiones por cero
+            return 0
+        vector_pelota = vector_pelota/np.linalg.norm(vector_pelota) #normalizar vector
+        
+        #Calculo del angulo entre el frente del robot y la pelota
+        angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
+        angulo = math.degrees(angulo) #convertir de radianes a grados
+        
+        #Determinar el signo del angulo basado en el producto cruzado        
+        signo = np.cross(frente_robot,vector_pelota)
+        if signo < 0:
+            angulo = -angulo  # Ángulo negativo si es hacia la izquierda
+            
+        return angulo
 
     def run(self):
         self.hilo_corriendo = True
@@ -187,6 +204,16 @@ class Oculus(QThread):
                         #Calcular el vector  de direccion frontal (El frente se asume entre las esquinas 0 y 3)
                         front_direccion =  marker_corners[0][0] - marker_corners[0][3]
                         front_direccion = front_direccion/np.linalg.norm(front_direccion) # normalizar el vector
+                        
+                        robot_pos = (px,py)
+                        if pelota_pos is not None and robot_pos is not None:
+                            #Llamado de la funcion 
+                            angulo_diferencia = self.angulo_frente(front_direccion,(px,py),pelota_pos)
+                            
+                            #Print angulo_diferencia
+                            #print(f"Angulo del frente del robot respecto a la pelota:{angulo_diferencia} grados")
+                            
+                            
 
                         front_point = (int(px + front_direccion[0]*30),int(py + front_direccion[1]*30))
                         cv2.line(frame,(px,py),front_point, (0,255,255),2) # Dibujar la linea para indicar el frente
@@ -197,7 +224,6 @@ class Oculus(QThread):
                         # Mostrar las coordenadas del marcador ArUco
                         cv2.putText(frame, f'({px},{py})', (px + 5, py - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-                        # Si hay pelota detectada, calcular el ángulo con el frente del marcador
                       
                      # Llamar a la función de proximidad y obtener los marcadores más cercanos a cada portería
                     id_izquierda, dist_izquierda, id_derecha, dist_derecha = self.mas_cerca_arco_local(area_interes, ids, centros)
@@ -205,18 +231,19 @@ class Oculus(QThread):
                     # Mostrar el ID y la distancia de los marcadores más cercanos en pantalla
                     cv2.putText(frame, f'Más cercano a izquierda: ID {id_izquierda} ({dist_izquierda:.2f} px)', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
                     cv2.putText(frame, f'Más cercano a derecha: ID {id_derecha} ({dist_derecha:.2f} px)', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                    
+                    
+                    #Print mas_cerca_arco_local
                     #print("id izq=",id_izquierda, dist_izquierda, "id dere=", id_derecha, dist_derecha)    
+                    
 
-
-
-                
                 # Detectar el color rojo en el área de interés
                 mask, res = self.detectar_color_rojo(area_interes)
                 
                 # Encontrar los contornos de los objetos rojos
                 contornos, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-                pelota_pos= None #array posición pelota ###############
+                pelota_pos= None #array posición pelota 
                 
                 for contorno in contornos:
                     # Ignorar pequeños contornos
@@ -229,13 +256,17 @@ class Oculus(QThread):
                         cx = int(M["m10"] / M["m00"])
                         cy = int(M["m01"] / M["m00"])
                         
-                        pelota_pos=(cx,cy) #posicion de la pelota ###################
+                        pelota_pos=(cx,cy) #posicion de la pelota 
+                        
 
                         # Llamar a la función Posicion_pelota para determinar la ubicación de la pelota
                         posicion = self.Posicion_pelota(cx, cy)
                         if posicion is not None:
-                            estado_area = "Local" if posicion else "Rival" # if po
-                            ###############print(f"La pelota está en el área: {estado_area}")
+                            estado_area = "Local" if posicion else "Rival" 
+                            
+                            
+                            #Print Posicion_pelota
+                            #print(f"La pelota está en el área: {estado_area}")
 
                         # Dibujar un círculo en el centro del objeto rojo
                         cv2.circle(area_interes, (cx, cy), 5, (0, 0, 0), -1)
@@ -245,11 +276,25 @@ class Oculus(QThread):
                         if centros:
                             # Comparar distancia entre IDs específicos y el objeto rojo
                             id_mas_cercano, distancia = self.comparar_distancia_arucos(ids, centros, 1, 0, pelota_pos)
+                            angulo_orientacion = self.angulo_frente(front_direccion,(px,py),pelota_pos)
+                            
+                            #Umbral del angulo (Se puede modificar si es necesario)
+                            angulo_umbral = -10 #grados
+                            angulo_umbral1 = 10 #grados
                     
                             # Mostrar en pantalla cuál ID está más cerca del objeto rojo
                             if id_mas_cercano is not None:
                                 cv2.putText(frame, f'ID {id_mas_cercano} está más cerca del objeto rojo ({distancia:.2f}px)', (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-                                print(f"Id mas cercano {id_mas_cercano}")
+                               
+                                #print Comparar_distancia_arucos + angulo_frente (Posesion del balon)
+                                #print(f"Id mas cercano {id_mas_cercano}")
+                                
+                            
+                            if angulo_umbral <= angulo_orientacion <= angulo_umbral1:
+                                print(f"El robot con ID {id_mas_cercano} tiene la posesión del balón.")
+                            else:
+                                print(f"El robot con ID {id_mas_cercano} esta cerca, pero no posee el balon.")
+                                
 
                 # Dibujar el plano cartesiano en el área de interés
                 cv2.line(frame, (self.area_inicio_x, self.area_inicio_y + self.area_alto // 2), (self.area_inicio_x + self.area_ancho, self.area_inicio_y + self.area_alto // 2), (255, 255, 255), 2)  # Eje X
