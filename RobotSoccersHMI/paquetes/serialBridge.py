@@ -63,9 +63,9 @@ class SerialConnection:
 # Ejemplo de uso
 if __name__ == "__main__":
 
-    serial_obj = SerialConnection(port='COM9', baudrate=9600)
+    serial_obj = SerialConnection(port='COM5', baudrate=9600)
     serial_obj.connect()
-    time.sleep(1)
+    time.sleep(2)
 
     # Llama a la función para obtener la lista de puertos
     #ports = serial_obj.list_ports()

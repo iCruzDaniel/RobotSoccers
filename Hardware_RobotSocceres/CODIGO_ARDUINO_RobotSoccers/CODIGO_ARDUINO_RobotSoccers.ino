@@ -11,7 +11,7 @@ SoftwareSerial WMBT(A4, A5);  // RX, TX recorder que se cruzan
 
 #include "VAR.h"
 //MAQUINA
-int M = MAQUINA_1;  //Cambiar este valor dependiendo de la maquina que se vaya a programar...
+int M = MAQUINA_2;  //Cambiar este valor dependiendo de la maquina que se vaya a programar...
 
 //Char recibido = 0;
 String tramaRecibida;
@@ -189,17 +189,19 @@ void loop() {
 
 
 
-
+/*
   // Limpiar el buffer antes de leer
   while (WMBT.available() > 0) {
     WMBT.read();
   }
+  */
 
   // Enviar la trama desde tu programa principal
  //Serial.print("Hola, Arduino!");
 
   // Leer la trama completa en el Arduino
 if (WMBT.available() > 0) {
+   //WMBT.read();
   tramaRecibida = WMBT.readStringUntil('|');  // Leer hasta un salto de línea
   Serial.print("Comando recibido (trama completa): ");
   Serial.println(tramaRecibida);  // Imprime la trama completa en una sola línea
@@ -218,7 +220,7 @@ if (WMBT.available() > 0) {
 
 
     WMBT.flush();
-    WMBT.println("R");
+    //WMBT.println("R");
   }
   else {
     WMBT.flush();
