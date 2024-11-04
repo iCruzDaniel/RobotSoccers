@@ -209,7 +209,11 @@ class Oculus(QThread):
                         if pelota_pos is not None and robot_pos is not None:
                             #Llamado de la funcion 
                             angulo_diferencia = self.angulo_frente(front_direccion,(px,py),pelota_pos)
-                            print(f"Angulo del frente del robot respecto a la pelota:{angulo_diferencia} grados")
+                            
+                            #Print angulo_diferencia
+                            #print(f"Angulo del frente del robot respecto a la pelota:{angulo_diferencia} grados")
+                            
+                            
 
                         front_point = (int(px + front_direccion[0]*30),int(py + front_direccion[1]*30))
                         cv2.line(frame,(px,py),front_point, (0,255,255),2) # Dibujar la linea para indicar el frente
@@ -220,11 +224,6 @@ class Oculus(QThread):
                         # Mostrar las coordenadas del marcador ArUco
                         cv2.putText(frame, f'({px},{py})', (px + 5, py - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
-                        # Si hay pelota detectada, calcular el ángulo con el frente del marcador
-                        if pelota_pos is not None:
-                            #Llamado de la funcion 
-                            angulo_diferencia = self.angulo_frente(front_direccion,(px,py),pelota_pos)
-                            print(f"Angulo del frente del robot respecto a la pelota:", round(angulo_diferencia), "grados")
                       
                      # Llamar a la función de proximidad y obtener los marcadores más cercanos a cada portería
                     id_izquierda, dist_izquierda, id_derecha, dist_derecha = self.mas_cerca_arco_local(area_interes, ids, centros)
@@ -232,11 +231,12 @@ class Oculus(QThread):
                     # Mostrar el ID y la distancia de los marcadores más cercanos en pantalla
                     cv2.putText(frame, f'Más cercano a izquierda: ID {id_izquierda} ({dist_izquierda:.2f} px)', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
                     cv2.putText(frame, f'Más cercano a derecha: ID {id_derecha} ({dist_derecha:.2f} px)', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                    
+                    
+                    #Print mas_cerca_arco_local
                     #print("id izq=",id_izquierda, dist_izquierda, "id dere=", id_derecha, dist_derecha)    
+                    
 
-
-
-                
                 # Detectar el color rojo en el área de interés
                 mask, res = self.detectar_color_rojo(area_interes)
                 
@@ -262,7 +262,10 @@ class Oculus(QThread):
                         # Llamar a la función Posicion_pelota para determinar la ubicación de la pelota
                         posicion = self.Posicion_pelota(cx, cy)
                         if posicion is not None:
-                            estado_area = "Local" if posicion else "Rival" # if po
+                            estado_area = "Local" if posicion else "Rival" 
+                            
+                            
+                            #Print Posicion_pelota
                             #print(f"La pelota está en el área: {estado_area}")
 
                         # Dibujar un círculo en el centro del objeto rojo
@@ -273,11 +276,25 @@ class Oculus(QThread):
                         if centros:
                             # Comparar distancia entre IDs específicos y el objeto rojo
                             id_mas_cercano, distancia = self.comparar_distancia_arucos(ids, centros, 1, 0, pelota_pos)
+                            angulo_orientacion = self.angulo_frente(front_direccion,(px,py),pelota_pos)
+                            
+                            #Umbral del angulo (Se puede modificar si es necesario)
+                            angulo_umbral = -10 #grados
+                            angulo_umbral1 = 10 #grados
                     
                             # Mostrar en pantalla cuál ID está más cerca del objeto rojo
                             if id_mas_cercano is not None:
                                 cv2.putText(frame, f'ID {id_mas_cercano} está más cerca del objeto rojo ({distancia:.2f}px)', (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-                                print(f"Id mas cercano {id_mas_cercano}")
+                               
+                                #print Comparar_distancia_arucos + angulo_frente (Posesion del balon)
+                                #print(f"Id mas cercano {id_mas_cercano}")
+                                
+                            
+                            if angulo_umbral <= angulo_orientacion <= angulo_umbral1:
+                                print(f"El robot con ID {id_mas_cercano} tiene la posesión del balón.")
+                            else:
+                                print(f"El robot con ID {id_mas_cercano} esta cerca, pero no posee el balon.")
+                                
 
                 # Dibujar el plano cartesiano en el área de interés
                 cv2.line(frame, (self.area_inicio_x, self.area_inicio_y + self.area_alto // 2), (self.area_inicio_x + self.area_ancho, self.area_inicio_y + self.area_alto // 2), (255, 255, 255), 2)  # Eje X
