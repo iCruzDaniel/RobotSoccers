@@ -7,26 +7,26 @@ class Tree:
             "vvvffv": "horario|baja|0",
             "vvvfff": "antihorario|baja|0",
 
-            "vvffv": "horario|baja|0",
-            "vvfff": "antihorario|baja|0",
+            "vvfffv": "horario|baja|0",
+            "vvffff": "antihorario|baja|0", 
 
             "vfvffv": "horario|baja|0",
             "vfvfff": "antihorario|baja|0",
 
-            "vfffv": "horario|baja|0",
-            "vffff": "antihorario|baja|0",
+            "vffffv": "horario|baja|0",
+            "vfffff": "antihorario|baja|0",
 
             "fvvffv": "horario|baja|0",
             "fvvffv": "antihorario|baja|0",
 
-            "fvffv": "horario|baja|0",
-            "fvfff": "antihorario|baja|0",
+            "fvfffv": "horario|baja|0",
+            "fvffff": "antihorario|baja|0",
 
             "ffvffv": "horario|baja|0",
             "ffvfff": "antihorario|baja|0",
 
-            "ffffv": "horario|baja|0",
-            "fffff": "antihorario|baja|0"
+            "fffffv": "horario|baja|0",
+            "ffffff": "antihorario|baja|0"
         }
         
     def eval(self):
