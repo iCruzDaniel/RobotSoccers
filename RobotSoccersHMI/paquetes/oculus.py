@@ -142,7 +142,24 @@ class Oculus(QThread):
             return id1, distancia_id1
         else:
             return id2, distancia_id2
-
+        
+    def angulo_frente(self, frente_robot, robot_pos, pelota_pos):
+        #Vector desde el robot hacia la pelota
+        vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
+        if np.linalg.norm(vector_pelota) == 0: #Evitar divisiones por cero
+            return 0
+        vector_pelota = vector_pelota/np.linalg.norm(vector_pelota) #normalizar vector
+        
+        #Calculo del angulo entre el frente del robot y la pelota
+        angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
+        angulo = math.degrees(angulo) #convertir de radianes a grados
+        
+        #Determinar el signo del angulo basado en el producto cruzado        
+        signo = np.cross(frente_robot,vector_pelota)
+        if signo < 0:
+            angulo = -angulo  # Ángulo negativo si es hacia la izquierda
+            
+        return angulo
 
     def run(self):
         self.hilo_corriendo = True
@@ -187,6 +204,12 @@ class Oculus(QThread):
                         #Calcular el vector  de direccion frontal (El frente se asume entre las esquinas 0 y 3)
                         front_direccion =  marker_corners[0][0] - marker_corners[0][3]
                         front_direccion = front_direccion/np.linalg.norm(front_direccion) # normalizar el vector
+                        
+                        robot_pos = (px,py)
+                        if pelota_pos is not None and robot_pos is not None:
+                            #Llamado de la funcion 
+                            angulo_diferencia = self.angulo_frente(front_direccion,(px,py),pelota_pos)
+                            print(f"Angulo del frente del robot respecto a la pelota:{angulo_diferencia} grados")
 
                         front_point = (int(px + front_direccion[0]*30),int(py + front_direccion[1]*30))
                         cv2.line(frame,(px,py),front_point, (0,255,255),2) # Dibujar la linea para indicar el frente
@@ -198,6 +221,10 @@ class Oculus(QThread):
                         cv2.putText(frame, f'({px},{py})', (px + 5, py - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
                         # Si hay pelota detectada, calcular el ángulo con el frente del marcador
+                        if pelota_pos is not None:
+                            #Llamado de la funcion 
+                            angulo_diferencia = self.angulo_frente(front_direccion,(px,py),pelota_pos)
+                            print(f"Angulo del frente del robot respecto a la pelota:", round(angulo_diferencia), "grados")
                       
                      # Llamar a la función de proximidad y obtener los marcadores más cercanos a cada portería
                     id_izquierda, dist_izquierda, id_derecha, dist_derecha = self.mas_cerca_arco_local(area_interes, ids, centros)
@@ -216,7 +243,7 @@ class Oculus(QThread):
                 # Encontrar los contornos de los objetos rojos
                 contornos, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-                pelota_pos= None #array posición pelota ###############
+                pelota_pos= None #array posición pelota 
                 
                 for contorno in contornos:
                     # Ignorar pequeños contornos
@@ -229,13 +256,14 @@ class Oculus(QThread):
                         cx = int(M["m10"] / M["m00"])
                         cy = int(M["m01"] / M["m00"])
                         
-                        pelota_pos=(cx,cy) #posicion de la pelota ###################
+                        pelota_pos=(cx,cy) #posicion de la pelota 
+                        
 
                         # Llamar a la función Posicion_pelota para determinar la ubicación de la pelota
                         posicion = self.Posicion_pelota(cx, cy)
                         if posicion is not None:
                             estado_area = "Local" if posicion else "Rival" # if po
-                            ###############print(f"La pelota está en el área: {estado_area}")
+                            #print(f"La pelota está en el área: {estado_area}")
 
                         # Dibujar un círculo en el centro del objeto rojo
                         cv2.circle(area_interes, (cx, cy), 5, (0, 0, 0), -1)
