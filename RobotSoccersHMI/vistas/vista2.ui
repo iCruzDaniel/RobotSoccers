@@ -324,25 +324,29 @@ qproperty-alignment: 'AlignCenter';</string>
     <widget class="QLabel" name="label_8">
      <property name="geometry">
       <rect>
-       <x>164</x>
+       <x>190</x>
        <y>460</y>
-       <width>271</width>
+       <width>261</width>
        <height>31</height>
       </rect>
      </property>
      <property name="styleSheet">
       <string notr="true">color: #343049;
 background-color: none;
-font: 18pt &quot;Berlin Sans FB&quot;;</string>
+font: 18pt &quot;Berlin Sans FB&quot;;
+</string>
      </property>
      <property name="text">
       <string>Panel de Control</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
     <widget class="QLabel" name="label_9">
      <property name="geometry">
       <rect>
-       <x>50</x>
+       <x>210</x>
        <y>530</y>
        <width>241</width>
        <height>31</height>
