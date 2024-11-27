@@ -15,7 +15,7 @@ if __name__ == "__main__":
 else:
     from .serialBridge import *
     from .vent_cam import *
-    from .oculus import *
+    from .oculus import * 
     from .panel_control import *
 
 

@@ -12,35 +12,32 @@ init_y = 0 + exc
 ancho = 600
 alto =  330
 num_dispositivo = 0
-
 class Oculus(QThread):
-#    def __init__(self, num_dispositivo=0, init_x=0, init_y=0, ancho=720, alto=480):
-        # Definir el área de interés
-    area_inicio_x = init_x
-    area_inicio_y = init_y
-    area_ancho = ancho
-    area_alto = alto
-    num_dispositivo = num_dispositivo
     Imageupdate = pyqtSignal(QImage)
+    def __init__(self, num_dispositivo=0, init_x=0, init_y=75, ancho=600, alto=330):
+        super().__init__()
+        # Inicialización del área de interés
+        self.area_inicio_x = init_x
+        self.area_inicio_y = init_y
+        self.area_ancho = ancho
+        self.area_alto = alto
+        self.num_dispositivo = num_dispositivo
+        self.frame = None  # Inicializar el frame a None
+        self.robot_id = 0 # el arbol debe de enviar cual id se este evaluando
+        
+        # Variables para el área local y rival
+        self.area_local = (20, 20, 300, 320) #xmin ymin, xmax ymax
+        self.area_rival = (301, 20, 600, 320) #xmin ymin, xmax ymax
 
-    # Dimensiones de las porterías dentro del ROI
-    porteria_ancho = 50  # Ajusta según el tamaño deseado de la portería
-    porteria_alto = int(area_alto * 0.2)  # Altura de la portería
-
-    #zona de poseción pelota
-    area_local = (20, 20, 300, 320)  # (x_min, y_min, x_max, y_max)
-    area_rival = (301, 20, 600, 320)  # (x_min, y_min, x_max, y_max)
-
-    # Función para detectar el color rojo en la imagen
-    def detectar_color_rojo(self, frame):
-        # Convertir la imagen al espacio de color HSV
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    def detectar_color_pelota(self):  #detecta el color de la pelota y retorna la mask y el res
+        """
+        Detecta el color rojo en el atributo 'frame' y devuelve la máscara y el resultado filtrado.
+        """
+        hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
         
         # Definir el rango de color rojo en HSV
         lower_red = np.array([0, 120, 70])
         upper_red = np.array([10, 255, 255])
-        
-        # Crear una máscara para el color rojo
         mask1 = cv2.inRange(hsv, lower_red, upper_red)
         
         # Otro rango para tonos más claros de rojo
@@ -48,272 +45,384 @@ class Oculus(QThread):
         upper_red2 = np.array([180, 255, 255])
         mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
         
-        # Unir ambas máscaras
+        # Unir ambas máscaras y aplicar al frame
         mask = mask1 + mask2
-        
-        # Filtrar solo el color rojo de la imagen
-        res = cv2.bitwise_and(frame, frame, mask=mask)
+        #sacar el color rojo de la imagen
+        res = cv2.bitwise_and(self.frame, self.frame, mask=mask)
         
         return mask, res
+
+    def detectar_arucos(self): #detecta los codigos arucos, y su linea de frente, retorna los centroides y los ID
+        """
+        Detecta los códigos ArUco en el frame y devuelve los centroides y IDs de los códigos detectados.
+        """
+        # Convertir la imagen a escala de grises y definir el diccionario ArUco
+        gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+
+        aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_5X5_50)
+        parameters = aruco.DetectorParameters()
+
+        # Detectar marcadores ArUco
+        corners, ids, _ = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+        
+        centros = []
+        front_point = []
+        if ids is not None:
+            for marker_corners in corners:
+                center = np.mean(marker_corners[0], axis=0)
+                px, py = int(center[0]), int(center[1])
+                centros.append((px, py))
+                aruco.drawDetectedMarkers(self.frame, corners, ids)
+
+                #Calcular el vector  de direccion frontal (El frente se asume entre las esquinas 0 y 3)
+                front_direccion =  marker_corners[0][0] - marker_corners[0][1] #esquinas
+                front_direccion = front_direccion/np.linalg.norm(front_direccion) # normalizar el vector
+                front_point = (int(px + front_direccion[0]*30),int(py + front_direccion[1]*30))
+                cv2.line(self.frame,(px,py),front_point, (0,255,255),2) # Dibujar la linea para indicar el frente
+        
+        return centros, ids, front_point
+
+    def detectar_centroides_pelota(self, mask, res): #detecta los centroides de la pelota y retorna su centroide
+        """
+        Detecta los centroides de los objetos rojos en el área de interés usando la máscara.
+        """
+        contornos, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        centroides = []
+        for contorno in contornos: 
+                if cv2.contourArea(contorno) < 500:
+                    continue  # Ignorar contornos pequeños
+                
+                # Calcular el centroide del contorno
+                x, y, ancho, alto = cv2.boundingRect(contorno)
+                # se extraen las coordenadas del recuadro
+                xi = x # coordenada x inicial
+                yi = y #coordenada en y inicial
+                xf = x + ancho # coordenada x final
+                yf = y + alto # coordenada en y final
+                # dibujamos el rectangulo
+                cv2.rectangle(self.frame, (xi,yi), (xf, yf),(255,255,0),2)
+                # calculamos el centroide
+                cx = int((xi+xf)/2) #centroide en x
+                cy = int((yi+yf)/2) # centroide en y
+                centroides.append((cx, cy))
+                cv2.circle(self.frame,(cx,cy),1,(0,0,0), 2)
+                # mostrar las coordenadas
+                texto_coordenadas = f" ({cx}, {cy})" # coordenadas en forma de texto para mostrar en el frame
+                # Añade el texto al frame en una posición deseada
+                cv2.putText(self.frame, texto_coordenadas, (cx + 15, cy+15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+        return centroides
     
-    def Posicion_pelota(self, cx, cy):
+
+    #primera evaluación mira en que zona esta la pelota, rival o local.    
+    def Posicion_pelota(self): 
+        # Detectar el color de la pelota en el frame
+        mask, res = self.detectar_color_pelota()
+
+        # Encontrar el centroide de la pelota
+        centroides_pelota = self.detectar_centroides_pelota(mask, res)
+
+        # Verificar si se encontró la pelota
+        if not centroides_pelota:
+            return None  # No hay pelota detectada
+
+        # Obtener el centroide de la pelota
+        cx, cy = centroides_pelota[0]  # Considerar solo el primer centroide si hay varios
+
         # Verificar si la pelota está en el área local
         if (self.area_local[0] <= cx <= self.area_local[2]) and (self.area_local[1] <= cy <= self.area_local[3]):
             return True  # Está en el área local
-        
+
         # Verificar si la pelota está en el área rival
         if (self.area_rival[0] <= cx <= self.area_rival[2]) and (self.area_rival[1] <= cy <= self.area_rival[3]):
             return False  # Está en el área rival
+
+    #segunda evaluación mira cual robot esta mas cerca al arco de la zona local
+    def mas_cerca_arco_local(self): 
+        # Determinar si el arco "local" es el izquierdo o el derecho
+        pelota_en_area_local = self.Posicion_pelota()
+        #dimenciones del arco "local"
+
+        # Dimensiones de las porterías dentro del ROI
+        porteria_ancho = 50  # Ajusta según el tamaño deseado de la portería
+        porteria_alto = int(self.area_alto * 0.2)  # Altura de la portería
         
-        return None  # No está en ninguna de las áreas
+        if pelota_en_area_local:
+            centro_arco = (10 + porteria_ancho // 2, (self.area_alto - porteria_alto) // 2)  # Coordenadas del arco izquierdo
+        else:
+            centro_arco = (self.area_ancho - porteria_ancho // 2 - 10, (self.area_alto - porteria_alto) // 2)  # Coordenadas del arco derecho
 
-    def mas_cerca_arco_local(self, area_interes, ids, centros):
-        """
-        Dibuja los cuadros izquierdo y derecho en el área de interés y determina
-        cuál marcador está más cerca de cada portería.
-        """
-        # Coordenadas de las porterías (cuadros) en la ROI
-        porteria_izquierda_x = 10
-        porteria_izquierda_y = (self.area_alto - self.porteria_alto) // 2
-        porteria_derecha_x = self.area_ancho - self.porteria_ancho - 10
-        porteria_derecha_y = porteria_izquierda_y
+        # Detectar marcadores ArUco
+        centros_arucos, ids_arucos, frente_robot= self.detectar_arucos()
 
-        # Dibujar el cuadro izquierdo en verde
-        cv2.rectangle(area_interes, (porteria_izquierda_x, porteria_izquierda_y),
-                      (porteria_izquierda_x + self.porteria_ancho, porteria_izquierda_y + self.porteria_alto), (0, 255, 0), 2)
-        
-        # Dibujar el cuadro derecho en rojo
-        cv2.rectangle(area_interes, (porteria_derecha_x, porteria_derecha_y),
-                      (porteria_derecha_x + self.porteria_ancho, porteria_derecha_y + self.porteria_alto), (255, 0, 0), 2)
+        if ids_arucos is None:
+            return False  # No hay marcadores detectados, devolver False
 
-        # Calcular los centros de cada portería
-        centro_izquierda = (porteria_izquierda_x + self.porteria_ancho // 2, porteria_izquierda_y + self.porteria_alto // 2)
-        centro_derecha = (porteria_derecha_x + self.porteria_ancho // 2, porteria_derecha_y + self.porteria_alto // 2)
-
-        # Variables para almacenar el marcador más cercano a cada portería
-        id_mas_cercano_izquierda = None
-        id_mas_cercano_derecha = None
-        distancia_min_izquierda = float('inf')
-        distancia_min_derecha = float('inf')
+        # Inicializar variables para almacenar el marcador más cercano al arco
+        id_mas_cercano = None
+        distancia_min = float('inf')
 
         # Iterar sobre cada marcador detectado
-        for i, centro in enumerate(centros):
-            # Calcular la distancia del marcador a cada portería
-            distancia_izquierda = np.linalg.norm(np.array(centro) - np.array(centro_izquierda))
-            distancia_derecha = np.linalg.norm(np.array(centro) - np.array(centro_derecha))
+        for i, centro in enumerate(centros_arucos):
+            distancia_arco = np.linalg.norm(np.array(centro) - np.array(centro_arco))
             
-            # Verificar si es el más cercano a la portería izquierda
-            if distancia_izquierda < distancia_min_izquierda:
-                distancia_min_izquierda = distancia_izquierda
-                id_mas_cercano_izquierda = ids[i][0]  # ID del marcador
+            # Verificar si es el más cercano al arco "local"
+            if distancia_arco < distancia_min:
+                distancia_min = distancia_arco
+                id_mas_cercano = ids_arucos[i][0]
 
-            # Verificar si es el más cercano a la portería derecha
-            if distancia_derecha < distancia_min_derecha:
-                distancia_min_derecha = distancia_derecha
-                id_mas_cercano_derecha = ids[i][0]  # ID del marcador
+        # Retornar True si el robot_id actual es el más cercano al arco "local" determinado
+        return id_mas_cercano == self.robot_id
+    
+    #tercera evaluación determina que robot esta mas cerca de la pelota
+    def mas_cerca_pelota(self):
+        """
+        Determina si el robot con ID específico (self.robot_id) es el más cercano a la pelota.
+        Retorna True si el robot_id está más cerca de la pelota, False si no lo está, y None si alguno de los IDs no está presente.
+        """
+        # Detectar el color de la pelota
+        mask, res = self.detectar_color_pelota()
 
-        # Devolver el marcador más cercano a cada portería y sus distancias
-        return id_mas_cercano_izquierda, distancia_min_izquierda, id_mas_cercano_derecha, distancia_min_derecha
-        
-         
-         # Función para calcular la distancia entre dos puntos
-       
-    def comparar_distancia_arucos(self, ids, centros, id1, id2, pelota_pos):
-    # Verificar que ambos ID estén en la lista de marcadores detectados
+        # Detectar los centroides de la pelota en la ROI
+        pelota_centroides = self.detectar_centroides_pelota(mask, res)
+        if not pelota_centroides:
+            return None  # No se encontró pelota
+
+        # Considerar el primer centro de la pelota detectado
+        pelota_pos = pelota_centroides[0]
+        # Detectar los códigos ArUco en la ROI
+        centros_arucos, ids_arucos, frente_robot = self.detectar_arucos()
+        if ids_arucos is None:
+            return None  # No se encontraron marcadores ArUco
+
+        # Verificar que ambos IDs (0 y 1) están presentes y obtener sus posiciones
         pos_id1 = None
         pos_id2 = None
+        for i, id_ in enumerate(ids_arucos):
+            if id_[0] == 0:
+                pos_id1 = centros_arucos[i]
+            elif id_[0] == 1:
+                pos_id2 = centros_arucos[i]
 
-        for i, id_ in enumerate(ids):
-            if id_[0] == id1:
-                pos_id1 = centros[i]
-            elif id_[0] == id2:
-                pos_id2 = centros[i]
-
-        # Si alguno de los IDs no fue encontrado, devolver None
+        # Si alguno de los IDs no está presente, retornar None
         if pos_id1 is None or pos_id2 is None:
-            return None, None  # No se pudo realizar la comparación
+            return None
 
-        # Calcular la distancia desde cada ID al objeto rojo
+        # Calcular distancias de los IDs a la pelota
         distancia_id1 = np.linalg.norm(np.array(pos_id1) - np.array(pelota_pos))
         distancia_id2 = np.linalg.norm(np.array(pos_id2) - np.array(pelota_pos))
 
-         # Determinar cuál ID está más cerca del objeto rojo
-        if distancia_id1 < distancia_id2:
-            return id1, distancia_id1
+        # Determinar si el robot evaluado es el más cercano a la pelota
+        if self.robot_id == 0:
+            return distancia_id1 <= distancia_id2
+        elif self.robot_id == 1:
+            return distancia_id2 < distancia_id1
         else:
-            return id2, distancia_id2
-        
-    def angulo_frente(self, frente_robot, robot_pos, pelota_pos):
-        #Vector desde el robot hacia la pelota
-        vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
-        if np.linalg.norm(vector_pelota) == 0: #Evitar divisiones por cero
-            return 0
-        vector_pelota = vector_pelota/np.linalg.norm(vector_pelota) #normalizar vector
-        
-        #Calculo del angulo entre el frente del robot y la pelota
-        angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
-        angulo = math.degrees(angulo) #convertir de radianes a grados
-        
-        #Determinar el signo del angulo basado en el producto cruzado        
-        signo = np.cross(frente_robot,vector_pelota)
-        if signo < 0:
-            angulo = -angulo  # Ángulo negativo si es hacia la izquierda
+            return None  # ID no válido para esta evaluación
             
-        return angulo
+        
+    #quinta evaluación, cuarta función, comprueba que el robot a evaluar este alineado con la pelota.    
+    def alineado_pelota(self):
+        """
+        Determina si el robot está alineado con la pelota dentro de un umbral de ángulo dado.
+        Retorna True si está alineado, False si no lo está, y None si el ID no se encuentra o no puede evaluarse.
+        """
+        # Detectar la pelota en el frame actual
+        mask, res = self.detectar_color_pelota()
+        pelota_centroides = self.detectar_centroides_pelota(mask, res)
+    
+        # Detectar los códigos ArUco en el frame actual
+        centros_arucos, ids_arucos, frente_robot = self.detectar_arucos()
+    
+        # Comprobar si la pelota está presente y tenemos los centros de los ArUcos
+        if not pelota_centroides or ids_arucos is None:
+            return None  # No se pudo realizar la evaluación, ID no encontrado
+        # Tomar la posición de la primera pelota detectada
+        pelota_pos = np.array(pelota_centroides[0])
 
+        #umbral de angulo
+        angle_threshold=5
+
+        # Buscar la posición y dirección del ID específico (self.robot_id) en los ArUcos detectados
+        for i, id_ in enumerate(ids_arucos):
+            if id_ == self.robot_id:
+                robot_pos = np.array(centros_arucos[i])
+                frente = frente_robot[i]
+
+                # Calcular el vector desde el robot hacia la pelota
+                vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
+                if np.linalg.norm(vector_pelota) == 0:  # Evitar divisiones por cero
+                    return False  # No está alineado si el vector es cero
+
+                # Normalizar el vector hacia la pelota
+                vector_pelota = vector_pelota / np.linalg.norm(vector_pelota)
+
+                # Calcular el ángulo entre el frente del robot y el vector hacia la pelota
+                angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
+                angulo = math.degrees(angulo)  # Convertir de radianes a grados
+
+                # Determinar el signo del ángulo usando el producto cruzado
+                signo = np.cross(frente_robot, vector_pelota)
+                if signo < 0:
+                    angulo = -angulo  # Ángulo negativo si es hacia la izquierda
+
+                # Evaluar si el ángulo está dentro del umbral
+                if -angle_threshold <= angulo <= angle_threshold:
+                    return True  # Alineado con la pelota
+                else:
+                    return False  # No está alineado con la pelota
+    
+    
+    def posesion_pelota(self):
+        # Detectar la pelota en el frame actual
+        mask, res = self.detectar_color_pelota()  # Detección de la pelota para actualizar la máscara interna
+        pelota_centroides = self.detectar_centroides_pelota(mask, res)
+
+        # Verificar si la pelota está presente
+        if not pelota_centroides:
+            return None  # No se detectó la pelota
+
+        pelota_pos = pelota_centroides[0]  # Suponemos una sola pelota, tomamos la primera
+
+        # Detectar ArUcos en el frame actual
+        centros_arucos, ids_arucos = self.detectar_arucos()
+
+        # Verificar si hay códigos QR
+        if ids_arucos is None or len(ids_arucos) == 0:
+            return None  # No se detectaron ArUcos
+
+        # Iterar sobre los ID y centros detectados para identificar el ID solicitado
+        for i, (id_, centro) in enumerate(zip(ids_arucos, centros_arucos)):
+            if id_ == self.robot_id:
+                robot_pos = centro
+
+                # Verificar si el robot está alineado con la pelota
+                alineado = self.alineado_pelota()
+                if alineado is not True:
+                    return False  # No está alineado, entonces no tiene posesión
+
+                # Calcular la distancia entre el robot y la pelota
+                distancia = np.linalg.norm(np.array(robot_pos) - np.array(pelota_pos))
+
+                # Definir umbral de distancia para considerar posesión de la pelota
+                distancia_umbral = 20  # Píxeles
+                if distancia < distancia_umbral:
+                    return True  # El robot tiene posesión de la pelota
+
+                # Si la distancia no es suficiente
+                return False
+
+        return None  # No se encontró el ID específico en los detectados
+
+    def desplazado_hacia(self):
+    # Primero, verificar si el robot está alineado con la pelota
+        alineado = self.alineado_pelota(self.robot_id)
+    
+    # Si el robot está alineado, no hace falta desplazarse
+        if alineado is True:
+            return None  # No hacer nada, está alineado
+
+        # Si no está alineado, evaluar el sentido de desalineación
+        elif alineado is False:
+           # Detectar ArUco para obtener los frentes y posiciones
+            centros_arucos, ids_arucos, frentes_arucos = self.detectar_arucos()
+        
+            # Verificar si el id_robot está presente
+            if self.robot_id in ids_arucos:
+                index = ids_arucos.index(self.robot_id)
+                frente_robot = frentes_arucos[index]
+                robot_pos = centros_arucos[index]
+            
+                # Detectar la posición de la pelota
+                pelota_centroides = self.detectar_centroides_pelota()
+                if pelota_centroides:
+                    pelota_pos = pelota_centroides[0]  # Suponemos una única pelota detectada
+                
+                    # Calcular el ángulo entre el frente del robot y la pelota
+                    vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
+                    vector_pelota = vector_pelota / np.linalg.norm(vector_pelota)
+                    angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
+                    angulo = math.degrees(angulo)
+
+                    # Determinar el signo del ángulo
+                    signo = np.cross(frente_robot, vector_pelota)
+                
+                    # Verificar hacia dónde está desalineado el robot
+                    if signo > 0:
+                       return True  # Desalineado hacia la derecha, sentido horario
+                    else:
+                        return False  # Desalineado hacia la izquierda, sentido antihorario
+
+        return None  # Si no se cumplen las condiciones anteriores
+    
     def run(self):
+
         self.hilo_corriendo = True
-        cap = cv2.VideoCapture(0)
-
-        # Definir el diccionario ArUco que se va a utilizar
-        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_5X5_50)
-
-        # Crear el detector de parámetros
-        parameters = cv2.aruco.DetectorParameters()
-
-        # Iniciar la captura de la cámara
         cap = cv2.VideoCapture(self.num_dispositivo)
 
         while self.hilo_corriendo:
-            ret, frame = cap.read()
+            ret, self.frame = cap.read()
             if ret:
+                # Actualizar el frame actual en el objeto
+                # Definir la ROI sobre el frame
+                area_interes = self.frame[self.area_inicio_y:self.area_inicio_y + self.area_alto, self.area_inicio_x:self.area_inicio_x + self.area_ancho]
+            
+                # Aplicar la detección de color de la pelota
+                mask, res = self.detectar_color_pelota()
+            
+                # Detectar los centroides de los objetos rojos en la máscara
+                centroides_pelota = self.detectar_centroides_pelota(mask, res)
+            
+                # Detectar los códigos ArUco
+                centros_arucos, ids_arucos, frente_pelota = self.detectar_arucos()
+                
+                posicion = self.Posicion_pelota()
+                estado_area = "Local" if posicion else "Rival"
+                #print(f"La pelota está en el área: {estado_area}")
 
-                # Convertir la imagen a escala de grises
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                #cual robot esta mas cerca al arco
+                es_mas_cercano_arco_local = self.mas_cerca_arco_local()
+                if es_mas_cercano_arco_local:
+                    #print(f"El robot con ID {self.robot_id} es el más cercano al arco 'local'")
+                    cv2.putText(area_interes, f"Robot {self.robot_id} cerca del arco local", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                else:
+                    #print(f"El robot con ID {self.robot_id} NO es el más cercano al arco 'local'")
+                    cv2.putText(area_interes, f"Robot {self.robot_id} no cerca del arco local", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
                 
-                # Detectar marcadores ArUco
-                corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+                # Evaluar si el robot actual (self.robot_id) es el más cercano a la pelota
+                es_mas_cercano = self.mas_cerca_pelota()
+                id_texto = f'ID {self.robot_id} esta mas cerca del objeto rojo' if es_mas_cercano else f'ID {self.robot_id} no es el mas cercano'
+                cv2.putText(area_interes, id_texto, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
+            
+                alineado_pelota= self.alineado_pelota()
+                if alineado_pelota is True:
+                    print("esta alineado")
+                elif alineado_pelota is False:
+                    print("no esta alineado")
+                else:
+                    print("no se detecto")
+            
+                # Visualizar los resultados en la ROI
                 
-                # Recortar el área de interés
-                area_interes = frame[self.area_inicio_y:self.area_inicio_y+self.area_alto, self.area_inicio_x:self.area_inicio_x+self.area_ancho]
+            # Dibujar el plano cartesiano en el área de interés
                 
-                #Inicializar centros como lista
-                centros =[] #array para la funcion
-
-                # Dibujar los marcadores detectados
-                if ids is not None:
-                    aruco.drawDetectedMarkers(frame, corners, ids)
+                #dibujar  ROI
+                # Dibujar el plano cartesiano en la ROI
+                cv2.line(area_interes, (0, self.area_alto // 2), (self.area_ancho, self.area_alto // 2), (255, 255, 255), 2)  # Eje X
+                cv2.line(area_interes, (self.area_ancho // 2, 0), (self.area_ancho // 2, self.area_alto), (255, 255, 255), 2)  # Eje Y
                     
-                    for marker_corners in corners:
-                        # Calcular el centro del marcador
-                        center = np.mean(marker_corners[0], axis=0)
-
-                        px, py = int(center[0]), int(center[1]) #cambiar nombre
-                        centros.append((px, py)) #array para la funcion
-
-                        #Calcular el vector  de direccion frontal (El frente se asume entre las esquinas 0 y 3)
-                        front_direccion =  marker_corners[0][0] - marker_corners[0][3]
-                        front_direccion = front_direccion/np.linalg.norm(front_direccion) # normalizar el vector
+                        # Dibujar el contorno de la ROI en el frame completo
+                cv2.rectangle(self.frame, (self.area_inicio_x, self.area_inicio_y), (self.area_inicio_x + self.area_ancho, self.area_inicio_y + self.area_alto), (255, 0, 0), 2)  # Cuadro azul
                         
-                        robot_pos = (px,py)
-                        if pelota_pos is not None and robot_pos is not None:
-                            #Llamado de la funcion 
-                            angulo_diferencia = self.angulo_frente(front_direccion,(px,py),pelota_pos)
-                            
-                            #Print angulo_diferencia
-                            #print(f"Angulo del frente del robot respecto a la pelota:{angulo_diferencia} grados")
-                            
-                            
-
-                        front_point = (int(px + front_direccion[0]*30),int(py + front_direccion[1]*30))
-                        cv2.line(frame,(px,py),front_point, (0,255,255),2) # Dibujar la linea para indicar el frente
-
-                        # Dibujar un círculo en el centro del marcador
-                        cv2.circle(frame, (px, py), 5, (0, 255, 0), -1)
-                        
-                        # Mostrar las coordenadas del marcador ArUco
-                        cv2.putText(frame, f'({px},{py})', (px + 5, py - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-
-                      
-                     # Llamar a la función de proximidad y obtener los marcadores más cercanos a cada portería
-                    id_izquierda, dist_izquierda, id_derecha, dist_derecha = self.mas_cerca_arco_local(area_interes, ids, centros)
-                    
-                    # Mostrar el ID y la distancia de los marcadores más cercanos en pantalla
-                    cv2.putText(frame, f'Más cercano a izquierda: ID {id_izquierda} ({dist_izquierda:.2f} px)', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-                    cv2.putText(frame, f'Más cercano a derecha: ID {id_derecha} ({dist_derecha:.2f} px)', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-                    
-                    
-                    #Print mas_cerca_arco_local
-                    #print("id izq=",id_izquierda, dist_izquierda, "id dere=", id_derecha, dist_derecha)    
-                    
-
-                # Detectar el color rojo en el área de interés
-                mask, res = self.detectar_color_rojo(area_interes)
-                
-                # Encontrar los contornos de los objetos rojos
-                contornos, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-                pelota_pos= None #array posición pelota 
-                
-                for contorno in contornos:
-                    # Ignorar pequeños contornos
-                    if cv2.contourArea(contorno) < 500:
-                        continue
-                
-                    # Obtener las coordenadas del centro del objeto rojo
-                    M = cv2.moments(contorno)
-                    if M["m00"] != 0:
-                        cx = int(M["m10"] / M["m00"])
-                        cy = int(M["m01"] / M["m00"])
-                        
-                        pelota_pos=(cx,cy) #posicion de la pelota 
-                        
-
-                        # Llamar a la función Posicion_pelota para determinar la ubicación de la pelota
-                        posicion = self.Posicion_pelota(cx, cy)
-                        if posicion is not None:
-                            estado_area = "Local" if posicion else "Rival" 
-                            
-                            
-                            #Print Posicion_pelota
-                            #print(f"La pelota está en el área: {estado_area}")
-
-                        # Dibujar un círculo en el centro del objeto rojo
-                        cv2.circle(area_interes, (cx, cy), 5, (0, 0, 0), -1)
-                        # Mostrar las coordenadas en la ventana
-                        cv2.putText(frame, f'({cx},{cy})', (self.area_inicio_x + cx, self.area_inicio_y + cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                        
-                        if centros:
-                            # Comparar distancia entre IDs específicos y el objeto rojo
-                            id_mas_cercano, distancia = self.comparar_distancia_arucos(ids, centros, 1, 0, pelota_pos)
-                            angulo_orientacion = self.angulo_frente(front_direccion,(px,py),pelota_pos)
-                            
-                            #Umbral del angulo (Se puede modificar si es necesario)
-                            angulo_umbral = -10 #grados
-                            angulo_umbral1 = 10 #grados
-                    
-                            # Mostrar en pantalla cuál ID está más cerca del objeto rojo
-                            if id_mas_cercano is not None:
-                                cv2.putText(frame, f'ID {id_mas_cercano} está más cerca del objeto rojo ({distancia:.2f}px)', (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-                               
-                                #print Comparar_distancia_arucos + angulo_frente (Posesion del balon)
-                                #print(f"Id mas cercano {id_mas_cercano}")
-                                
-                            
-                            if angulo_umbral <= angulo_orientacion <= angulo_umbral1:
-                                print(f"El robot con ID {id_mas_cercano} tiene la posesión del balón.")
-                            else:
-                                print(f"El robot con ID {id_mas_cercano} esta cerca, pero no posee el balon.")
-                                
-
-                # Dibujar el plano cartesiano en el área de interés
-                cv2.line(frame, (self.area_inicio_x, self.area_inicio_y + self.area_alto // 2), (self.area_inicio_x + self.area_ancho, self.area_inicio_y + self.area_alto // 2), (255, 255, 255), 2)  # Eje X
-                cv2.line(frame, (self.area_inicio_x + self.area_ancho // 2, self.area_inicio_y), (self.area_inicio_x + self.area_ancho // 2, self.area_inicio_y + self.area_alto), (255, 255, 255), 2)  # Eje Y
-                # Dibujar el contorno de la ROI
-                cv2.rectangle(frame, (self.area_inicio_x, self.area_inicio_y), (self.area_inicio_x + self.area_ancho, self.area_inicio_y + self.area_alto), (255, 0, 0), 2)  # Cuadro azul
-                
-                # Preparación de Imagen que va a la ventana de visualización
-                Image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                #flip = cv2.flip(Image, 1)
+                        # Visualizar en ventana
+                Image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
                 flip = Image
                 convertir_QT = QImage(flip.data, flip.shape[1], flip.shape[0], QImage.Format_RGB888)
                 pic = convertir_QT.scaled(720, 480, Qt.KeepAspectRatio)
                 self.Imageupdate.emit(pic)
-            else:
-                break
-
-
+            
 
     def stop(self):
         self.hilo_corriendo = False
         self.quit()
+        #actualizado
