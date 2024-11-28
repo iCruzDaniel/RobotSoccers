@@ -333,34 +333,38 @@ class Oculus(QThread):
 
     #indica si el robot tiene que girar hacia la izquierda o hacia la derecha
     def desplazado_hacia(self):
-        # Detectar ArUco para obtener los frentes y posiciones
+    # Detectar ArUco para obtener los frentes y posiciones
         centros_arucos, ids_arucos, frente_robot = self.detectar_arucos()
-        
-        # Verificar si el id_robot está presente
-        for i, id_ in enumerate(ids_arucos):
-            if id_ == self.robot_id:  # Encontrar el ID del robot evaluado
-                robot_pos = np.array(centros_arucos[i])
-            
-            # Detectar la posición de la pelota
-            mask, res = self.detectar_color_pelota()
-            pelota_centroides = self.detectar_centroides_pelota(mask, res)
-            if pelota_centroides:
-                pelota_pos = pelota_centroides[0]  # Suponemos una única pelota detectada
-                
-                # Calcular el ángulo entre el frente del robot y la pelota
-                vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
-                vector_pelota = vector_pelota / np.linalg.norm(vector_pelota)
-                angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
-                angulo = math.degrees(angulo)
 
-                # Determinar el signo del ángulo
-                signo = np.cross(frente_robot, vector_pelota)
-                
-                # Verificar hacia dónde está desalineado el robot
-                if signo > 0:
-                    return True  # Desalineado hacia la derecha, sentido horario
-                else:
-                    return False  # Desalineado hacia la izquierda, sentido antihorario
+    # Verificar si hay marcadores ArUco detectados
+        if ids_arucos is None:
+            return None  # No hay ArUcos detectados
+
+    # Verificar si el id_robot está presente
+        for i, id_ in enumerate(ids_arucos):
+            if id_[0] == self.robot_id:  # Encontrar el ID del robot evaluado
+                robot_pos = np.array(centros_arucos[i])
+
+                # Detectar la posición de la pelota
+                mask, res = self.detectar_color_pelota()
+                pelota_centroides = self.detectar_centroides_pelota(mask, res)
+                if pelota_centroides:
+                    pelota_pos = pelota_centroides[0]  # Suponemos una única pelota detectada
+
+                    # Calcular el ángulo entre el frente del robot y la pelota
+                    vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
+                    vector_pelota = vector_pelota / np.linalg.norm(vector_pelota)
+                    angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
+                    angulo = math.degrees(angulo)
+
+                    # Determinar el signo del ángulo
+                    signo = np.cross(frente_robot, vector_pelota)
+
+                    # Verificar hacia dónde está desalineado el robot
+                    if signo > 0:
+                        return True  # Desalineado hacia la derecha, sentido horario
+                    else:
+                        return False  # Desalineado hacia la izquierda, sentido antihorario
 
         return None  # Si no se cumplen las condiciones anteriores
     
