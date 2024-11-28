@@ -34,19 +34,19 @@ class Oculus(QThread):
         """
         hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
         
-        # Definir el rango de color rojo en HSV
-        lower_red = np.array([0, 120, 70])
-        upper_red = np.array([10, 255, 255])
-        mask1 = cv2.inRange(hsv, lower_red, upper_red)
+        # Definir el rango de color naranja en HSV
+        lower_color = np.array([10, 120, 70])
+        upper_color = np.array([35, 255, 255])
+        mask1 = cv2.inRange(hsv, lower_color, upper_color)
         
-        # Otro rango para tonos más claros de rojo
-        lower_red2 = np.array([170, 120, 70])
-        upper_red2 = np.array([180, 255, 255])
-        mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+        # Otro rango para tonos más claros de naranja
+        lower_color2 = np.array([5, 120, 70])
+        upper_color2 = np.array([15, 255, 255])
+        mask2 = cv2.inRange(hsv, lower_color2, upper_color2)
         
         # Unir ambas máscaras y aplicar al frame
         mask = mask1 + mask2
-        #sacar el color rojo de la imagen
+        #sacar el color naranja de la imagen
         res = cv2.bitwise_and(self.frame, self.frame, mask=mask)
         
         return mask, res
