@@ -245,7 +245,7 @@ class Oculus(QThread):
 
         # Verificar si la pelota está presente
         if not pelota_centroides:
-            return None  # No se detectó la pelota
+            return False  # No se detectó la pelota
 
         pelota_pos = pelota_centroides[0]  # Suponemos una sola pelota, tomamos la primera
 
@@ -254,7 +254,7 @@ class Oculus(QThread):
 
         # Verificar si hay códigos QR
         if ids_arucos is None or len(ids_arucos) == 0:
-            return None  # No se detectaron ArUcos
+            return False  # No se detectaron ArUcos
 
         # Iterar sobre los ID y centros detectados para identificar el ID solicitado
         for i, (id_, centro) in enumerate(zip(ids_arucos, centros_arucos)):
@@ -262,9 +262,9 @@ class Oculus(QThread):
                 robot_pos = centro
 
                 # Verificar si el robot está alineado con la pelota
-                alineado = self.alineado_pelota()
-                if alineado is not True:
-                    return False  # No está alineado, entonces no tiene posesión
+                #alineado = self.alineado_pelota()
+                #if alineado is not True:
+                #   return False  # No está alineado, entonces no tiene posesión
 
                 # Calcular la distancia entre el robot y la pelota
                 distancia = np.linalg.norm(np.array(robot_pos) - np.array(pelota_pos))
