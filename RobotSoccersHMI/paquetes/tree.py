@@ -33,9 +33,10 @@ class Tree:
         
     def eval(self, id_maquina):
         ID = id_maquina-1
+        current_key = "" 
         # -- valor = valor_si_true if condicion else valor_si_false
         #eval 1 
-        current_key += "v" if camara.Posicion_pelota(ID) else "f" 
+        current_key += "v" if camara.Posicion_pelota() else "f" 
 
         #eval 2
         current_key += "v" if camara.mas_cerca_arco_local(ID) else "f" 
