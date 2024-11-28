@@ -171,6 +171,8 @@ void detener() {
   Motor4.setSpeed(0);
   Motor4.run(RELEASE);
 }
+unsigned long lastReceiveTime = 0;  // Tiempo de la última trama recibida
+unsigned long timeout = 100;  // Tiempo máximo sin recibir una trama (en milisegundos)
 
 
 
@@ -182,13 +184,11 @@ void setup() {
   Motor2.run(RELEASE);
   Motor3.run(RELEASE);
   Motor4.run(RELEASE);
+  
 }
 
 
 void loop() {
-
-
-
 /*
   // Limpiar el buffer antes de leer
   while (WMBT.available() > 0) {
@@ -217,6 +217,9 @@ if (WMBT.available() > 0) {
     Serial.print(vel);
     Serial.print(" ");
     Serial.println(palanca);  //false == 0
+   
+   // Actualizamos el tiempo de la última trama recibida
+    lastReceiveTime = millis();
 
 
     WMBT.flush();
@@ -226,6 +229,10 @@ if (WMBT.available() > 0) {
     WMBT.flush();
   }
 }
+ // Verificar si ha pasado mucho tiempo sin recibir trama
+  if (millis() - lastReceiveTime > timeout) {
+    detener();  // Detenemos los motores si no se recibe nada dentro del tiempo límite
+  }
 
 
   /*int band = 0;
