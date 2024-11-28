@@ -14,7 +14,7 @@ alto =  330
 #num_dispositivo = 0
 class Oculus(QThread):
     Imageupdate = pyqtSignal(QImage)
-    def __init__(self, num_dispositivo=1, init_x=0, init_y=75, ancho=600, alto=330):
+    def __init__(self, num_dispositivo=0, init_x=0, init_y=75, ancho=600, alto=330):
         super().__init__()
         # Inicialización del área de interés
         self.area_inicio_x = init_x
