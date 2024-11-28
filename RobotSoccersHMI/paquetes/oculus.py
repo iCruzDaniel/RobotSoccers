@@ -11,10 +11,10 @@ init_x = 0
 init_y = 0 + exc
 ancho = 600
 alto =  330
-num_dispositivo = 0
+#num_dispositivo = 0
 class Oculus(QThread):
     Imageupdate = pyqtSignal(QImage)
-    def __init__(self, num_dispositivo=0, init_x=0, init_y=75, ancho=600, alto=330):
+    def __init__(self, num_dispositivo=1, init_x=0, init_y=75, ancho=600, alto=330):
         super().__init__()
         # Inicialización del área de interés
         self.area_inicio_x = init_x
@@ -145,8 +145,6 @@ class Oculus(QThread):
 
 
 
-
-
 #-------------------SEGUNDA EVALUACIÓN: Mas cerca al arco Local-----------------------
 
     #segunda evaluación mira cual robot esta mas cerca al arco de la zona local
@@ -186,6 +184,7 @@ class Oculus(QThread):
         # Retornar True si el robot_id actual es el más cercano al arco "local" determinado
         return id_mas_cercano == self.robot_id
     
+
 
 #-------------------TERCERA EVALUACIÓN: Mas cerca al arco Local-------------------------
 
@@ -236,6 +235,7 @@ class Oculus(QThread):
             return None  # ID no válido para esta evaluación
             
 
+
     #-------------------------------Cuarta EVALUACIÓN: Posesión Pelota---------------
     
     #rectifica que el robot  a evaluar tenga la pelota
@@ -279,6 +279,8 @@ class Oculus(QThread):
                 return False
 
         return None  # No se encontró el ID específico en los detectados
+
+
     
     #--------------------------------QUINTA EVALUACIÓN: Alineado Pelota---------------------------
 
@@ -368,9 +370,10 @@ class Oculus(QThread):
                         return False  # Desalineado hacia la izquierda, sentido antihorario
 
         return None  # Si no se cumplen las condiciones anteriores
-    
 
-    #Función RUN
+
+    
+    #--------------------------- RUN ----------------------------
     
     def run(self):
 
@@ -425,7 +428,7 @@ class Oculus(QThread):
                 
                 # Visualizar los resultados en la ROI
                 
-            # Dibujar el plano cartesiano en el área de interés
+                # Dibujar el plano cartesiano en el área de interés
                 
                 #dibujar  ROI
                 # Dibujar el plano cartesiano en la ROI
