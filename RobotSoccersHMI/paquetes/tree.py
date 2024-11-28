@@ -1,9 +1,10 @@
 from oculus import * 
+from paquetes.controller_ui import *
 
 class Tree:
     def __init__(self):
 
-        self.arbol  = {
+        self.index_desition  = {
             "vvvffv": "horario|baja|0",
             "vvvfff": "antihorario|baja|0",
 
@@ -30,7 +31,41 @@ class Tree:
         }
         
     def eval(self):
-        index = ""
+        
+        #current_key = ""
+        
+        #eval 1 -- valor = valor_si_true if condicion else valor_si_false
+        current_key += "v" if camara.Posicion_pelota() else "f" 
+
+        #eval 2
+        current_key += "v" if camara.mas_cerca_arco_local() else "f" 
+
+        #eval 3
+        current_key += "v" if camara.mas_cerca_pelota() else "f" 
+
+        #eval 4
+        current_key += "v" if camara.posesion_pelota() else "f" 
+
+        #eval 5
+        current_key += "v" if camara.alineado_pelota() else "f" 
+
+        #eval 6
+        current_key += "v" if camara.desplazado_hacia() else "f" 
         
         
-        return self.arbol[index]
+        try: 
+            print(self.index_desition[current_key])
+            return self.index_desition[current_key]
+    
+        except:
+            pass
+
+
+
+
+if __name__ == "__main__":
+    tree = Tree()
+    
+    print(tree.eval())
+    
+    pass
