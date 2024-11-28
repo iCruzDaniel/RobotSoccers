@@ -23,7 +23,6 @@ class Oculus(QThread):
         self.area_alto = alto
         self.num_dispositivo = num_dispositivo
         self.frame = None  # Inicializar el frame a None
-        self.robot_id = 0 # el arbol debe de enviar cual id se este evaluando
         
         # Variables para el área local y rival
         self.area_local = (20, 20, 300, 320) #xmin ymin, xmax ymax
@@ -41,8 +40,8 @@ class Oculus(QThread):
         mask1 = cv2.inRange(hsv, lower_red, upper_red)
         
         # Otro rango para tonos más claros de rojo
-        lower_red2 = np.array([170, 120, 70])
-        upper_red2 = np.array([180, 255, 255])
+        lower_red2 = np.array([5, 120, 70])
+        upper_red2 = np.array([15, 255, 255])
         mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
         
         # Unir ambas máscaras y aplicar al frame
@@ -392,6 +391,8 @@ class Oculus(QThread):
             
                 # Detectar los códigos ArUco
                 centros_arucos, ids_arucos, frente_pelota = self.detectar_arucos()
+
+                """
                 
                 posicion = self.Posicion_pelota()
                 estado_area = "Local" if posicion else "Rival"
@@ -420,8 +421,7 @@ class Oculus(QThread):
                     print("girar derecha")
                 if desplazado_hacia is False:
                     print("desplazado hacia la izquierda")
-
-                
+                """
                 
                 # Visualizar los resultados en la ROI
                 
