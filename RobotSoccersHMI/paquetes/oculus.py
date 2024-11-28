@@ -114,7 +114,13 @@ class Oculus(QThread):
         return centroides
     
 
-    #primera evaluación mira en que zona esta la pelota, rival o local.    
+
+    
+
+     
+    # ----------------PRIMERA EVALUACIÓN: Posicion de la pelota--------------------------------   
+    
+    #primera evaluación mira en que zona esta la pelota, rival o local.
     def Posicion_pelota(self): 
         # Detectar el color de la pelota en el frame
         mask, res = self.detectar_color_pelota()
@@ -136,6 +142,12 @@ class Oculus(QThread):
         # Verificar si la pelota está en el área rival
         if (self.area_rival[0] <= cx <= self.area_rival[2]) and (self.area_rival[1] <= cy <= self.area_rival[3]):
             return False  # Está en el área rival
+
+
+
+
+
+#-------------------SEGUNDA EVALUACIÓN: Mas cerca al arco Local-----------------------
 
     #segunda evaluación mira cual robot esta mas cerca al arco de la zona local
     def mas_cerca_arco_local(self): 
@@ -174,6 +186,9 @@ class Oculus(QThread):
         # Retornar True si el robot_id actual es el más cercano al arco "local" determinado
         return id_mas_cercano == self.robot_id
     
+
+#-------------------TERCERA EVALUACIÓN: Mas cerca al arco Local-------------------------
+
     #tercera evaluación determina que robot esta mas cerca de la pelota
     def mas_cerca_pelota(self):
         """
@@ -220,7 +235,8 @@ class Oculus(QThread):
         else:
             return None  # ID no válido para esta evaluación
             
-        
+        #--------------------------------QUINTA EVALUACIÓN: Alineado Pelota---------------------------
+
     #quinta evaluación, cuarta función, comprueba que el robot a evaluar este alineado con la pelota.    
     def alineado_pelota(self):
         """
@@ -268,7 +284,9 @@ class Oculus(QThread):
         return False  # Si el robot_id no está presente en los IDs detectados
 
     
+    #-------------------------------Cuarta EVALUACIÓN: Posesión Pelota---------------
     
+    #rectifica que el robot  a evaluar tenga la pelota
     def posesion_pelota(self):
         # Detectar la pelota en el frame actual
         mask, res = self.detectar_color_pelota()  # Detección de la pelota para actualizar la máscara interna
@@ -309,7 +327,11 @@ class Oculus(QThread):
                 return False
 
         return None  # No se encontró el ID específico en los detectados
+    
+    
+    #---------------------------SEXTA EVALUACIÓN: Desplazado hacia....----------------------------
 
+    #indica si el robot tiene que girar hacia la izquierda o hacia la derecha
     def desplazado_hacia(self):
         # Detectar ArUco para obtener los frentes y posiciones
         centros_arucos, ids_arucos, frente_robot = self.detectar_arucos()
@@ -341,6 +363,9 @@ class Oculus(QThread):
                     return False  # Desalineado hacia la izquierda, sentido antihorario
 
         return None  # Si no se cumplen las condiciones anteriores
+    
+
+    #Función RUN
     
     def run(self):
 
