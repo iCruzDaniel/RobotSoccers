@@ -63,9 +63,9 @@ class SerialConnection:
 # Ejemplo de uso
 if __name__ == "__main__":
 
-    serial_obj = SerialConnection(port='COM5', baudrate=9600)
+    serial_obj = SerialConnection(port='COM14', baudrate=9600)
     serial_obj.connect()
-    time.sleep(2)
+    time.sleep(1)
 
     # Llama a la función para obtener la lista de puertos
     #ports = serial_obj.list_ports()
@@ -76,29 +76,33 @@ if __name__ == "__main__":
     TRAMA DE EJMPLO: TA1110D7770|
     [T] --> Indica la transmición de datos
     [A] Primera letra --> Movimiento maquina 1
-    [111] siguientes 3 Digitos --> PWM Motores maquina 1
+    [200] siguientes 3 Digitos --> PWM Motores maquina 1
     [0] Cuerto dígito despues de la última letra--> indicador de pateo maquina 1
     [D] Segunda letra --> Movimiento maquina 2
-    [777] siguientes 3 Digitos --> PWM Motores maquina 2
+    [200] siguientes 3 Digitos --> PWM Motores maquina 2
     [0] Cuerto dígito despues de la última letra--> indicador de pateo maquina 2
     | --> Indicador de que se acabó la trama
     """
 
-    #serial_obj.send_data("TW1110D7770|") # Trama T
-    trama = "TP1110D7770|"
-   # for i in range(2):
-        #time.sleep(0.5)
-    serial_obj.send_data(trama) # Trama T
-    received = serial_obj.receive_data()
+    #serial_obj.send_data("TW2000D2000|") # Trama T
+    #trama = "TP1110P7770|"
+    for i in range(3):
+        serial_obj.send_data("TS2000S2000|") # Trama T
+        time.sleep(0.1)
     
-    band = 0
-    while received != 0 and band <= 1:
-        serial_obj.send_data(trama) # Trama T
-        received = serial_obj.receive_data()
-        band +=1
-        
-    received = 0
+    serial_obj.send_data("TA2000A2000|") # Trama T
+    time.sleep(1)
+    
+    for i in range(10):
+        serial_obj.send_data("TW2000W2000|") # Trama T
+        time.sleep(0.1)
+    
+    serial_obj.send_data("TD2000D2000|") # Trama T
+    time.sleep(1)
+    
+    #serial_obj.send_data("TP2000P2000|") # Trama T
+    serial_obj.disconnect()
+
     # Recibir datos
     
     # Desconectar
-    serial_obj.disconnect()

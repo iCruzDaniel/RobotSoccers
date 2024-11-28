@@ -144,8 +144,6 @@ class Oculus(QThread):
 
 
 
-
-
 #-------------------SEGUNDA EVALUACIÓN: Mas cerca al arco Local-----------------------
 
     #segunda evaluación mira cual robot esta mas cerca al arco de la zona local
@@ -184,6 +182,7 @@ class Oculus(QThread):
 
         # Retornar True si el robot_id actual es el más cercano al arco "local" determinado
         return id_mas_cercano == robot_id
+    
     
 
 #-------------------TERCERA EVALUACIÓN: Mas cerca al arco Local-------------------------
@@ -233,6 +232,7 @@ class Oculus(QThread):
             return distancia_id2 < distancia_id1
         else:
             return None  # ID no válido para esta evaluación
+   
             
 
     #-------------------------------Cuarta EVALUACIÓN: Posesión Pelota---------------
@@ -278,6 +278,8 @@ class Oculus(QThread):
                 return False
 
         return None  # No se encontró el ID específico en los detectados
+    
+    
     
     #--------------------------------QUINTA EVALUACIÓN: Alineado Pelota---------------------------
 
@@ -369,6 +371,7 @@ class Oculus(QThread):
         return None  # Si no se cumplen las condiciones anteriores
     
 
+
     #---------------------------------------RUN---------------------------------------
     
     def run(self):
@@ -442,6 +445,7 @@ class Oculus(QThread):
                 pic = convertir_QT.scaled(720, 480, Qt.KeepAspectRatio)
                 self.Imageupdate.emit(pic)
             
+    #---------------------------------------STOP---------------------------------------
 
     def stop(self):
         self.hilo_corriendo = False

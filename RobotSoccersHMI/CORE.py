@@ -6,7 +6,7 @@ from paquetes.controller_ui import *
 from paquetes.serialBridge import *
 from paquetes.tree import *
 
-
+arbol = Tree()
 
 #Ejecución del CORE:
 if __name__ == "__main__":
@@ -19,8 +19,15 @@ if __name__ == "__main__":
     
     
     while(True):
+        band = True
         while(cronometro.is_running):
-            
-            
-            pass
-        pass
+            #Varificar si es la conexión se ha restablcido o sigue en ejecución
+            if band:
+                print("Conectando al puerto serie...")
+                puerto.connect()
+                time.sleep(1)
+                band=False
+            #Evalua y manda la trama
+            trama = "T" + arbol.eval(1) + "D2000" + "|"#arbol.eval(2)
+            puerto.send_data(trama)
+            time.sleep(0.1)

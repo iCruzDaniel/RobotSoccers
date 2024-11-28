@@ -5,52 +5,52 @@ class Tree:
     def __init__(self):
 
         self.index_desition  = {
-            "vvvffv": "horario|baja|0",
-            "vvvfff": "antihorario|baja|0",
+            #    KEY: movimiento|PWM|pateo?,
+            "vvvffv": "F1500", 
+            "vvvfff": "X1500",
 
-            "vvfffv": "horario|baja|0",
-            "vvffff": "antihorario|baja|0", 
+            "vvfffv": "F1500",
+            "vvffff": "X1500", 
 
-            "vfvffv": "horario|baja|0",
-            "vfvfff": "antihorario|baja|0",
+            "vfvffv": "F1500",
+            "vfvfff": "X1500",
 
-            "vffffv": "horario|baja|0",
-            "vfffff": "antihorario|baja|0",
+            "vffffv": "F1500",
+            "vfffff": "X1500",
 
-            "fvvffv": "horario|baja|0",
-            "fvvffv": "antihorario|baja|0",
+            "fvvffv": "F1500",
+            "fvvffv": "X1500",
 
-            "fvfffv": "horario|baja|0",
-            "fvffff": "antihorario|baja|0",
+            "fvfffv": "F1500",
+            "fvffff": "X1500",
 
-            "ffvffv": "horario|baja|0",
-            "ffvfff": "antihorario|baja|0",
+            "ffvffv": "F1500",
+            "ffvfff": "X1500",
 
-            "fffffv": "horario|baja|0",
-            "ffffff": "antihorario|baja|0"
+            "fffffv": "F1500",
+            "ffffff": "X1500"
         }
         
-    def eval(self):
-        
-        #current_key = ""
-        
-        #eval 1 -- valor = valor_si_true if condicion else valor_si_false
-        current_key += "v" if camara.Posicion_pelota() else "f" 
+    def eval(self, id_maquina):
+        ID = id_maquina-1
+        # -- valor = valor_si_true if condicion else valor_si_false
+        #eval 1 
+        current_key += "v" if camara.Posicion_pelota(ID) else "f" 
 
         #eval 2
-        current_key += "v" if camara.mas_cerca_arco_local() else "f" 
+        current_key += "v" if camara.mas_cerca_arco_local(ID) else "f" 
 
         #eval 3
-        current_key += "v" if camara.mas_cerca_pelota() else "f" 
+        current_key += "v" if camara.mas_cerca_pelota(ID) else "f" 
 
         #eval 4
-        current_key += "v" if camara.posesion_pelota() else "f" 
+        current_key += "v" if camara.posesion_pelota(ID) else "f" 
 
         #eval 5
-        current_key += "v" if camara.alineado_pelota() else "f" 
+        current_key += "v" if camara.alineado_pelota(ID) else "f" 
 
         #eval 6
-        current_key += "v" if camara.desplazado_hacia() else "f" 
+        current_key += "v" if camara.desplazado_hacia(ID) else "f" 
         
         
         try: 

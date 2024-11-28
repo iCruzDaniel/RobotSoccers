@@ -59,6 +59,7 @@ camara = Oculus() #Objeto para ventana visualizadora de la camara
 
 vent_juego.menu.hide() #Esconder el menu principal
 
+
 # --- funciones
 
 #funcion para modificar el estado de baterías
@@ -122,7 +123,7 @@ def refrescarPuertos():
 
 def conectarCOM():
     pCOM = vent_juego.lista_puertos.currentText()
-
+    global puerto
     puerto = SerialConnection(pCOM)
     print(f"conectado {pCOM}")
 
