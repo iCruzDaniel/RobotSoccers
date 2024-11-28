@@ -31,7 +31,7 @@ bool convertirCharABool(char caracter) {
 // Funciones de movimiento (sin cambios)
 void adelante(int vel = 255) {
   Motor1.setSpeed(vel);
-  Motor1.run(FORWARD);
+  Motor1.run(FORWARD); 
   Motor2.setSpeed(vel);
   Motor2.run(FORWARD);
   Motor3.setSpeed(vel);
@@ -42,7 +42,7 @@ void adelante(int vel = 255) {
 
 void retroceder(int vel = 255) {
   Motor1.setSpeed(vel);
-  Motor1.run(BACKWARD);
+  Motor1.run(BACKWARD); 
   Motor2.setSpeed(vel);
   Motor2.run(BACKWARD);
   Motor3.setSpeed(vel);
@@ -53,24 +53,24 @@ void retroceder(int vel = 255) {
 
 void derecha(int vel = 255) {
   Motor1.setSpeed(vel);
-  Motor1.run(FORWARD);
+  Motor1.run(BACKWARD); 
   Motor2.setSpeed(vel);
   Motor2.run(FORWARD);
-  Motor3.setSpeed(0);
-  Motor3.run(RELEASE);
-  Motor4.setSpeed(0);
-  Motor4.run(RELEASE);
+  Motor3.setSpeed(vel);
+  Motor3.run(BACKWARD);
+  Motor4.setSpeed(vel);
+  Motor4.run(FORWARD);
 }
 
 void izquierda(int vel = 255) {
-  Motor1.setSpeed(0);
-  Motor1.run(RELEASE);
-  Motor2.setSpeed(0);
-  Motor2.run(RELEASE);
+  Motor1.setSpeed(vel);
+  Motor1.run(FORWARD); 
+  Motor2.setSpeed(vel);
+  Motor2.run(BACKWARD);
   Motor3.setSpeed(vel);
   Motor3.run(FORWARD);
   Motor4.setSpeed(vel);
-  Motor4.run(FORWARD);
+  Motor4.run(BACKWARD);
 }
 /*
 void adelanteizquierda(int vel = 255) {
@@ -97,7 +97,7 @@ void adelantederecha(int vel = 255) {
 */
 void diagonal1(int vel = 255) {
   Motor1.setSpeed(0);
-  Motor1.run(RELEASE);
+  Motor1.run(RELEASE); 
   Motor2.setSpeed(vel);
   Motor2.run(BACKWARD);
   Motor3.setSpeed(0);
@@ -108,7 +108,7 @@ void diagonal1(int vel = 255) {
 
 void diagonal2(int vel = 255) {
   Motor1.setSpeed(vel);
-  Motor1.run(FORWARD);
+  Motor1.run(FORWARD); 
   Motor2.setSpeed(0);
   Motor2.run(RELEASE);
   Motor3.setSpeed(vel);
@@ -119,7 +119,7 @@ void diagonal2(int vel = 255) {
 
 void diagonal3(int vel = 255) {
   Motor1.setSpeed(0);
-  Motor1.run(RELEASE);
+  Motor1.run(RELEASE); 
   Motor2.setSpeed(vel);
   Motor2.run(FORWARD);
   Motor3.setSpeed(0);
@@ -130,7 +130,7 @@ void diagonal3(int vel = 255) {
 
 void diagonal4(int vel = 255) {
   Motor1.setSpeed(vel);
-  Motor1.run(BACKWARD);
+  Motor1.run(BACKWARD); 
   Motor2.setSpeed(0);
   Motor2.run(RELEASE);
   Motor3.setSpeed(vel);
@@ -141,7 +141,7 @@ void diagonal4(int vel = 255) {
 
 void giroHorario(int vel = 255) {
   Motor1.setSpeed(vel);
-  Motor1.run(FORWARD);
+  Motor1.run(FORWARD); 
   Motor2.setSpeed(vel);
   Motor2.run(FORWARD);
   Motor3.setSpeed(vel);
@@ -152,7 +152,7 @@ void giroHorario(int vel = 255) {
 
 void giroAntihorario(int vel = 255) {
   Motor1.setSpeed(vel);
-  Motor1.run(BACKWARD);
+  Motor1.run(BACKWARD); 
   Motor2.setSpeed(vel);
   Motor2.run(BACKWARD);
   Motor3.setSpeed(vel);
@@ -205,7 +205,7 @@ if (WMBT.available() > 0) {
   tramaRecibida = WMBT.readStringUntil('|');  // Leer hasta un salto de línea
   Serial.print("Comando recibido (trama completa): ");
   Serial.println(tramaRecibida);  // Imprime la trama completa en una sola línea
-  if (tramaRecibida[0] == 'T') {
+  if (tramaRecibida[0] == 'D') {
 
     movimiento = tramaRecibida[1 + M];
     vel = 100 * (tramaRecibida[M + 2] - '0') + 10 * (tramaRecibida[M + 3] - '0') + (tramaRecibida[M + 4] - '0');
