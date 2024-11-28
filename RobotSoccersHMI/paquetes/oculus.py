@@ -235,7 +235,52 @@ class Oculus(QThread):
         else:
             return None  # ID no válido para esta evaluación
             
-        #--------------------------------QUINTA EVALUACIÓN: Alineado Pelota---------------------------
+
+    #-------------------------------Cuarta EVALUACIÓN: Posesión Pelota---------------
+    
+    #rectifica que el robot  a evaluar tenga la pelota
+    def posesion_pelota(self):
+        # Detectar la pelota en el frame actual
+        mask, res = self.detectar_color_pelota()  # Detección de la pelota para actualizar la máscara interna
+        pelota_centroides = self.detectar_centroides_pelota(mask, res)
+
+        # Verificar si la pelota está presente
+        if not pelota_centroides:
+            return None  # No se detectó la pelota
+
+        pelota_pos = pelota_centroides[0]  # Suponemos una sola pelota, tomamos la primera
+
+        # Detectar ArUcos en el frame actual
+        centros_arucos, ids_arucos, frente = self.detectar_arucos()
+
+        # Verificar si hay códigos QR
+        if ids_arucos is None or len(ids_arucos) == 0:
+            return None  # No se detectaron ArUcos
+
+        # Iterar sobre los ID y centros detectados para identificar el ID solicitado
+        for i, (id_, centro) in enumerate(zip(ids_arucos, centros_arucos)):
+            if id_ == self.robot_id:
+                robot_pos = centro
+
+                # Verificar si el robot está alineado con la pelota
+                alineado = self.alineado_pelota()
+                if alineado is not True:
+                    return False  # No está alineado, entonces no tiene posesión
+
+                # Calcular la distancia entre el robot y la pelota
+                distancia = np.linalg.norm(np.array(robot_pos) - np.array(pelota_pos))
+
+                # Definir umbral de distancia para considerar posesión de la pelota
+                distancia_umbral = 20  # Píxeles
+                if distancia < distancia_umbral:
+                    return True  # El robot tiene posesión de la pelota
+
+                # Si la distancia no es suficiente
+                return False
+
+        return None  # No se encontró el ID específico en los detectados
+    
+    #--------------------------------QUINTA EVALUACIÓN: Alineado Pelota---------------------------
 
     #quinta evaluación, cuarta función, comprueba que el robot a evaluar este alineado con la pelota.    
     def alineado_pelota(self):
@@ -283,50 +328,6 @@ class Oculus(QThread):
 
         return False  # Si el robot_id no está presente en los IDs detectados
 
-    
-    #-------------------------------Cuarta EVALUACIÓN: Posesión Pelota---------------
-    
-    #rectifica que el robot  a evaluar tenga la pelota
-    def posesion_pelota(self):
-        # Detectar la pelota en el frame actual
-        mask, res = self.detectar_color_pelota()  # Detección de la pelota para actualizar la máscara interna
-        pelota_centroides = self.detectar_centroides_pelota(mask, res)
-
-        # Verificar si la pelota está presente
-        if not pelota_centroides:
-            return None  # No se detectó la pelota
-
-        pelota_pos = pelota_centroides[0]  # Suponemos una sola pelota, tomamos la primera
-
-        # Detectar ArUcos en el frame actual
-        centros_arucos, ids_arucos, frente = self.detectar_arucos()
-
-        # Verificar si hay códigos QR
-        if ids_arucos is None or len(ids_arucos) == 0:
-            return None  # No se detectaron ArUcos
-
-        # Iterar sobre los ID y centros detectados para identificar el ID solicitado
-        for i, (id_, centro) in enumerate(zip(ids_arucos, centros_arucos)):
-            if id_ == self.robot_id:
-                robot_pos = centro
-
-                # Verificar si el robot está alineado con la pelota
-                alineado = self.alineado_pelota()
-                if alineado is not True:
-                    return False  # No está alineado, entonces no tiene posesión
-
-                # Calcular la distancia entre el robot y la pelota
-                distancia = np.linalg.norm(np.array(robot_pos) - np.array(pelota_pos))
-
-                # Definir umbral de distancia para considerar posesión de la pelota
-                distancia_umbral = 20  # Píxeles
-                if distancia < distancia_umbral:
-                    return True  # El robot tiene posesión de la pelota
-
-                # Si la distancia no es suficiente
-                return False
-
-        return None  # No se encontró el ID específico en los detectados
     
     
     #---------------------------SEXTA EVALUACIÓN: Desplazado hacia....----------------------------
