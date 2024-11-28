@@ -75,7 +75,7 @@ class Oculus(QThread):
                 aruco.drawDetectedMarkers(self.frame, corners, ids)
 
                 #Calcular el vector  de direccion frontal (El frente se asume entre las esquinas 0 y 3)
-                front_direccion =  marker_corners[0][0] - marker_corners[0][1] #esquinas
+                front_direccion =  marker_corners[0][0] - marker_corners[0][3] #esquinas
                 front_direccion = front_direccion/np.linalg.norm(front_direccion) # normalizar el vector
                 front_point = (int(px + front_direccion[0]*30),int(py + front_direccion[1]*30))
                 cv2.line(self.frame,(px,py),front_point, (0,255,255),2) # Dibujar la linea para indicar el frente
@@ -224,53 +224,49 @@ class Oculus(QThread):
     #quinta evaluación, cuarta función, comprueba que el robot a evaluar este alineado con la pelota.    
     def alineado_pelota(self):
         """
-        Determina si el robot está alineado con la pelota dentro de un umbral de ángulo dado.
-        Retorna True si está alineado, False si no lo está, y None si el ID no se encuentra o no puede evaluarse.
+        Determina si el robot está alineado con la pelota basándose en los centroides (x, y).
+        Retorna True si está alineado, False si no lo está.
         """
         # Detectar la pelota en el frame actual
         mask, res = self.detectar_color_pelota()
         pelota_centroides = self.detectar_centroides_pelota(mask, res)
-    
+
         # Detectar los códigos ArUco en el frame actual
-        centros_arucos, ids_arucos, frente_robot = self.detectar_arucos()
-    
-        # Comprobar si la pelota está presente y tenemos los centros de los ArUcos
+        centros_arucos, ids_arucos, _ = self.detectar_arucos()
+
+        # Verificar que haya pelota y robots detectados
         if not pelota_centroides or ids_arucos is None:
-            return None  # No se pudo realizar la evaluación, ID no encontrado
-        # Tomar la posición de la primera pelota detectada
+            return False  # No hay pelota o robots detectados
+
+        # Obtener el centroide de la primera pelota detectada
         pelota_pos = np.array(pelota_centroides[0])
 
-        #umbral de angulo
-        angle_threshold=5
-
-        # Buscar la posición y dirección del ID específico (self.robot_id) en los ArUcos detectados
+        # Buscar el centroide del robot con el ID especificado
         for i, id_ in enumerate(ids_arucos):
-            if id_ == self.robot_id:
+            if id_[0] == self.robot_id:  # Encontrar el ID del robot evaluado
                 robot_pos = np.array(centros_arucos[i])
-                frente = frente_robot[i]
 
-                # Calcular el vector desde el robot hacia la pelota
-                vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
-                if np.linalg.norm(vector_pelota) == 0:  # Evitar divisiones por cero
-                    return False  # No está alineado si el vector es cero
+                # Definir tolerancias para la alineación
+                tolerancia_y = 10  # Desviación aceptada en el eje Y (horizontal)
+                tolerancia_x = 10  # Desviación aceptada en el eje X (vertical)
+                distancia_minima = 20  # Distancia mínima en el otro eje para evitar falsos positivos
 
-                # Normalizar el vector hacia la pelota
-                vector_pelota = vector_pelota / np.linalg.norm(vector_pelota)
+                # Evaluar alineación en el eje Y (horizontal)
+                alineado_y = abs(pelota_pos[1] - robot_pos[1]) <= tolerancia_y
+                suficientemente_lejos_x = abs(pelota_pos[0] - robot_pos[0]) > distancia_minima
 
-                # Calcular el ángulo entre el frente del robot y el vector hacia la pelota
-                angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
-                angulo = math.degrees(angulo)  # Convertir de radianes a grados
+                # Evaluar alineación en el eje X (vertical)
+                alineado_x = abs(pelota_pos[0] - robot_pos[0]) <= tolerancia_x
+                suficientemente_lejos_y = abs(pelota_pos[1] - robot_pos[1]) > distancia_minima
 
-                # Determinar el signo del ángulo usando el producto cruzado
-                signo = np.cross(frente_robot, vector_pelota)
-                if signo < 0:
-                    angulo = -angulo  # Ángulo negativo si es hacia la izquierda
-
-                # Evaluar si el ángulo está dentro del umbral
-                if -angle_threshold <= angulo <= angle_threshold:
-                    return True  # Alineado con la pelota
+                # Retornar True si está alineado en cualquier eje y suficientemente lejos en el otro eje
+                if (alineado_y and suficientemente_lejos_x) or (alineado_x and suficientemente_lejos_y):
+                    return True  # Está alineado en al menos uno de los ejes
                 else:
-                    return False  # No está alineado con la pelota
+                    return False  # No está alineado en ninguno de los ejes
+
+        return False  # Si el robot_id no está presente en los IDs detectados
+
     
     
     def posesion_pelota(self):
@@ -285,7 +281,7 @@ class Oculus(QThread):
         pelota_pos = pelota_centroides[0]  # Suponemos una sola pelota, tomamos la primera
 
         # Detectar ArUcos en el frame actual
-        centros_arucos, ids_arucos = self.detectar_arucos()
+        centros_arucos, ids_arucos, frente = self.detectar_arucos()
 
         # Verificar si hay códigos QR
         if ids_arucos is None or len(ids_arucos) == 0:
@@ -315,43 +311,34 @@ class Oculus(QThread):
         return None  # No se encontró el ID específico en los detectados
 
     def desplazado_hacia(self):
-    # Primero, verificar si el robot está alineado con la pelota
-        alineado = self.alineado_pelota(self.robot_id)
-    
-    # Si el robot está alineado, no hace falta desplazarse
-        if alineado is True:
-            return None  # No hacer nada, está alineado
-
-        # Si no está alineado, evaluar el sentido de desalineación
-        elif alineado is False:
-           # Detectar ArUco para obtener los frentes y posiciones
-            centros_arucos, ids_arucos, frentes_arucos = self.detectar_arucos()
+        # Detectar ArUco para obtener los frentes y posiciones
+        centros_arucos, ids_arucos, frente_robot = self.detectar_arucos()
         
-            # Verificar si el id_robot está presente
-            if self.robot_id in ids_arucos:
-                index = ids_arucos.index(self.robot_id)
-                frente_robot = frentes_arucos[index]
-                robot_pos = centros_arucos[index]
+        # Verificar si el id_robot está presente
+        for i, id_ in enumerate(ids_arucos):
+            if id_ == self.robot_id:  # Encontrar el ID del robot evaluado
+                robot_pos = np.array(centros_arucos[i])
             
-                # Detectar la posición de la pelota
-                pelota_centroides = self.detectar_centroides_pelota()
-                if pelota_centroides:
-                    pelota_pos = pelota_centroides[0]  # Suponemos una única pelota detectada
+            # Detectar la posición de la pelota
+            mask, res = self.detectar_color_pelota()
+            pelota_centroides = self.detectar_centroides_pelota(mask, res)
+            if pelota_centroides:
+                pelota_pos = pelota_centroides[0]  # Suponemos una única pelota detectada
                 
-                    # Calcular el ángulo entre el frente del robot y la pelota
-                    vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
-                    vector_pelota = vector_pelota / np.linalg.norm(vector_pelota)
-                    angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
-                    angulo = math.degrees(angulo)
+                # Calcular el ángulo entre el frente del robot y la pelota
+                vector_pelota = np.array([pelota_pos[0] - robot_pos[0], pelota_pos[1] - robot_pos[1]])
+                vector_pelota = vector_pelota / np.linalg.norm(vector_pelota)
+                angulo = np.arccos(np.clip(np.dot(frente_robot, vector_pelota), -1.0, 1.0))
+                angulo = math.degrees(angulo)
 
-                    # Determinar el signo del ángulo
-                    signo = np.cross(frente_robot, vector_pelota)
+                # Determinar el signo del ángulo
+                signo = np.cross(frente_robot, vector_pelota)
                 
-                    # Verificar hacia dónde está desalineado el robot
-                    if signo > 0:
-                       return True  # Desalineado hacia la derecha, sentido horario
-                    else:
-                        return False  # Desalineado hacia la izquierda, sentido antihorario
+                # Verificar hacia dónde está desalineado el robot
+                if signo > 0:
+                    return True  # Desalineado hacia la derecha, sentido horario
+                else:
+                    return False  # Desalineado hacia la izquierda, sentido antihorario
 
         return None  # Si no se cumplen las condiciones anteriores
     
@@ -379,7 +366,7 @@ class Oculus(QThread):
                 posicion = self.Posicion_pelota()
                 estado_area = "Local" if posicion else "Rival"
                 #print(f"La pelota está en el área: {estado_area}")
-
+                
                 #cual robot esta mas cerca al arco
                 es_mas_cercano_arco_local = self.mas_cerca_arco_local()
                 if es_mas_cercano_arco_local:
@@ -391,17 +378,21 @@ class Oculus(QThread):
                 
                 # Evaluar si el robot actual (self.robot_id) es el más cercano a la pelota
                 es_mas_cercano = self.mas_cerca_pelota()
-                id_texto = f'ID {self.robot_id} esta mas cerca del objeto rojo' if es_mas_cercano else f'ID {self.robot_id} no es el mas cercano'
-                cv2.putText(area_interes, id_texto, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
-            
+                #id_texto = f'ID {self.robot_id} esta mas cerca del objeto rojo' if es_mas_cercano else f'ID {self.robot_id} no es el mas cercano'
+                #cv2.putText(area_interes, id_texto, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
+                
                 alineado_pelota= self.alineado_pelota()
-                if alineado_pelota is True:
-                    print("esta alineado")
-                elif alineado_pelota is False:
-                    print("no esta alineado")
-                else:
-                    print("no se detecto")
-            
+                
+                posesion_pelota=self.posesion_pelota()
+
+                desplazado_hacia= self.desplazado_hacia()
+                if desplazado_hacia is True:
+                    print("girar derecha")
+                if desplazado_hacia is False:
+                    print("desplazado hacia la izquierda")
+
+                
+                
                 # Visualizar los resultados en la ROI
                 
             # Dibujar el plano cartesiano en el área de interés
