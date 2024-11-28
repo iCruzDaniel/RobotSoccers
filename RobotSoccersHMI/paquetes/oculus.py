@@ -149,7 +149,7 @@ class Oculus(QThread):
 #-------------------SEGUNDA EVALUACIÓN: Mas cerca al arco Local-----------------------
 
     #segunda evaluación mira cual robot esta mas cerca al arco de la zona local
-    def mas_cerca_arco_local(self): 
+    def mas_cerca_arco_local(self, robot_id): 
         # Determinar si el arco "local" es el izquierdo o el derecho
         pelota_en_area_local = self.Posicion_pelota()
         #dimenciones del arco "local"
@@ -183,13 +183,13 @@ class Oculus(QThread):
                 id_mas_cercano = ids_arucos[i][0]
 
         # Retornar True si el robot_id actual es el más cercano al arco "local" determinado
-        return id_mas_cercano == self.robot_id
+        return id_mas_cercano == robot_id
     
 
 #-------------------TERCERA EVALUACIÓN: Mas cerca al arco Local-------------------------
 
     #tercera evaluación determina que robot esta mas cerca de la pelota
-    def mas_cerca_pelota(self):
+    def mas_cerca_pelota(self, robot_id):
         """
         Determina si el robot con ID específico (self.robot_id) es el más cercano a la pelota.
         Retorna True si el robot_id está más cerca de la pelota, False si no lo está, y None si alguno de los IDs no está presente.
@@ -227,9 +227,9 @@ class Oculus(QThread):
         distancia_id2 = np.linalg.norm(np.array(pos_id2) - np.array(pelota_pos))
 
         # Determinar si el robot evaluado es el más cercano a la pelota
-        if self.robot_id == 0:
+        if robot_id == 0:
             return distancia_id1 <= distancia_id2
-        elif self.robot_id == 1:
+        elif robot_id == 1:
             return distancia_id2 < distancia_id1
         else:
             return None  # ID no válido para esta evaluación
@@ -238,7 +238,7 @@ class Oculus(QThread):
     #-------------------------------Cuarta EVALUACIÓN: Posesión Pelota---------------
     
     #rectifica que el robot  a evaluar tenga la pelota
-    def posesion_pelota(self):
+    def posesion_pelota(self, robot_id):
         # Detectar la pelota en el frame actual
         mask, res = self.detectar_color_pelota()  # Detección de la pelota para actualizar la máscara interna
         pelota_centroides = self.detectar_centroides_pelota(mask, res)
@@ -258,7 +258,7 @@ class Oculus(QThread):
 
         # Iterar sobre los ID y centros detectados para identificar el ID solicitado
         for i, (id_, centro) in enumerate(zip(ids_arucos, centros_arucos)):
-            if id_ == self.robot_id:
+            if id_ == robot_id:
                 robot_pos = centro
 
                 # Verificar si el robot está alineado con la pelota
@@ -282,7 +282,7 @@ class Oculus(QThread):
     #--------------------------------QUINTA EVALUACIÓN: Alineado Pelota---------------------------
 
     #quinta evaluación, cuarta función, comprueba que el robot a evaluar este alineado con la pelota.    
-    def alineado_pelota(self):
+    def alineado_pelota(self, robot_id):
         """
         Determina si el robot está alineado con la pelota basándose en los centroides (x, y).
         Retorna True si está alineado, False si no lo está.
@@ -303,7 +303,7 @@ class Oculus(QThread):
 
         # Buscar el centroide del robot con el ID especificado
         for i, id_ in enumerate(ids_arucos):
-            if id_[0] == self.robot_id:  # Encontrar el ID del robot evaluado
+            if id_[0] == robot_id:  # Encontrar el ID del robot evaluado
                 robot_pos = np.array(centros_arucos[i])
 
                 # Definir tolerancias para la alineación
@@ -332,7 +332,7 @@ class Oculus(QThread):
     #---------------------------SEXTA EVALUACIÓN: Desplazado hacia....----------------------------
 
     #indica si el robot tiene que girar hacia la izquierda o hacia la derecha
-    def desplazado_hacia(self):
+    def desplazado_hacia(self, robot_id):
     # Detectar ArUco para obtener los frentes y posiciones
         centros_arucos, ids_arucos, frente_robot = self.detectar_arucos()
 
@@ -342,7 +342,7 @@ class Oculus(QThread):
 
     # Verificar si el id_robot está presente
         for i, id_ in enumerate(ids_arucos):
-            if id_[0] == self.robot_id:  # Encontrar el ID del robot evaluado
+            if id_[0] == robot_id:  # Encontrar el ID del robot evaluado
                 robot_pos = np.array(centros_arucos[i])
 
                 # Detectar la posición de la pelota
@@ -369,7 +369,7 @@ class Oculus(QThread):
         return None  # Si no se cumplen las condiciones anteriores
     
 
-    #Función RUN
+    #---------------------------------------RUN---------------------------------------
     
     def run(self):
 
