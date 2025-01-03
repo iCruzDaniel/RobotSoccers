@@ -125,7 +125,7 @@ Este proyecto está licenciado bajo la Licencia `  ` . Consulta el archivo [LICE
 
 - **Autores**: [Daniel Cruz](), [Jesús Miranda](), [Angel Carrascal](), [Jesús Polo](), [William García](https://github.com/usuario)  
 - **Correo electrónico**: sp_dicruz@hotmail.com
-- **Sitio web**: [DanielCruzPortfolio](https://github.com/iCruzDaniel/portfolio)  
+- **Sitio web**: [DanielCruzPortfolio](https://icruzdaniel.github.io/portfolio/)  
 
 
 
