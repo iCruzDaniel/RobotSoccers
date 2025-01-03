@@ -129,7 +129,7 @@ class Oculus(QThread):
 
         # Verificar si se encontró la pelota
         if not centroides_pelota:
-            return None  # No hay pelota detectada
+            return False  # No hay pelota detectada
 
         # Obtener el centroide de la pelota
         cx, cy = centroides_pelota[0]  # Considerar solo el primer centroide si hay varios
@@ -199,14 +199,14 @@ class Oculus(QThread):
         # Detectar los centroides de la pelota en la ROI
         pelota_centroides = self.detectar_centroides_pelota(mask, res)
         if not pelota_centroides:
-            return None  # No se encontró pelota
+            return False  # No se encontró pelota
 
         # Considerar el primer centro de la pelota detectado
         pelota_pos = pelota_centroides[0]
         # Detectar los códigos ArUco en la ROI
         centros_arucos, ids_arucos, frente_robot = self.detectar_arucos()
         if ids_arucos is None:
-            return None  # No se encontraron marcadores ArUco
+            return False  # No se encontraron marcadores ArUco
 
         # Verificar que ambos IDs (0 y 1) están presentes y obtener sus posiciones
         pos_id1 = None
@@ -219,7 +219,7 @@ class Oculus(QThread):
 
         # Si alguno de los IDs no está presente, retornar None
         if pos_id1 is None or pos_id2 is None:
-            return None
+            return False
 
         # Calcular distancias de los IDs a la pelota
         distancia_id1 = np.linalg.norm(np.array(pos_id1) - np.array(pelota_pos))
@@ -231,7 +231,7 @@ class Oculus(QThread):
         elif robot_id == 1:
             return distancia_id2 < distancia_id1
         else:
-            return None  # ID no válido para esta evaluación
+            return False  # ID no válido para esta evaluación
    
             
 
@@ -277,7 +277,7 @@ class Oculus(QThread):
                 # Si la distancia no es suficiente
                 return False
 
-        return None  # No se encontró el ID específico en los detectados
+        return False  # No se encontró el ID específico en los detectados
     
     
     
@@ -340,7 +340,7 @@ class Oculus(QThread):
 
     # Verificar si hay marcadores ArUco detectados
         if ids_arucos is None:
-            return None  # No hay ArUcos detectados
+            return False  # No hay ArUcos detectados
 
     # Verificar si el id_robot está presente
         for i, id_ in enumerate(ids_arucos):
@@ -368,7 +368,7 @@ class Oculus(QThread):
                     else:
                         return False  # Desalineado hacia la izquierda, sentido antihorario
 
-        return None  # Si no se cumplen las condiciones anteriores
+        return False  # Si no se cumplen las condiciones anteriores
     
 
 
