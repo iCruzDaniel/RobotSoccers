@@ -1,8 +1,10 @@
 # **RobotSoccers**
 
 ![Versión](https://img.shields.io/badge/version-1.0.0-green)
+![Build In Progress](https://img.shields.io/badge/build-in%20progress-blue)
 
-**A través del desarrollo de robots futbolistas con ruedas omnidireccionales, este proyecto de aula permite aplicar de forma práctica conocimientos de visión artificial (para la percepción del entorno y el balón), control inteligente (para la toma de decisiones y la ejecución de movimientos) y diseño de interfaces hombre-máquina (para la interacción con el usuario y la configuración del entorno de jugeo).**
+
+**A través del desarrollo de robots futbolistas con ruedas omnidireccionales, este proyecto de aula permite aplicar de forma práctica conocimientos de visión artificial (para la percepción del entorno y el balón), control inteligente (para la toma de decisiones y la ejecución de movimientos) y diseño de interfaces hombre-máquina (para la interacción con el usuario y la configuración del entorno de juego).**
 
 ---
 
@@ -72,9 +74,6 @@ pip install -r requirements.txt
 1. El proyecto, como interfaz HMI, se ejecuta desde el script _CORE.py_.  
 
 ```bash
-# Desde el entorno viertual de python, ejecutar lo sgte:
-
-# 
 
 ```
 
