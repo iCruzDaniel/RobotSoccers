@@ -1,6 +1,9 @@
 # **RobotSoccers**
 
 ![Versión](https://img.shields.io/badge/version-1.0.0-green)
+![Python](https://img.shields.io/badge/Python-3.9-blue)
+![Arduino](https://img.shields.io/badge/Arduino-IDE_2.1-blue?logo=arduino&logoColor=white)
+
 
 **A través del desarrollo de robots futbolistas con ruedas omnidireccionales, este proyecto de aula permite aplicar de forma práctica conocimientos de visión artificial (para la percepción del entorno y el balón), control inteligente (para la toma de decisiones y la ejecución de movimientos) y diseño de interfaces hombre-máquina (para la interacción con el usuario y la configuración del entorno de jugeo).**
 
@@ -123,7 +126,7 @@ Este proyecto está licenciado bajo la Licencia `  ` . Consulta el archivo [LICE
 
 ## **Contacto**
 
-- **Autores**: [Daniel Cruz](), [Jesús Miranda](), [Angel Carrascal](), [Jesús Polo](), [William García](https://github.com/usuario)  
+- **Autores**: [Daniel Cruz](https://github.com/iCruzDaniel), [Jesús Miranda](https://github.com/jesuMiranda), [Angel Carrascal](), [Jesús Polo](), [William García](https://github.com/usuario)  
 - **Correo electrónico**: sp_dicruz@hotmail.com
 - **Sitio web**: [DanielCruzPortfolio](https://icruzdaniel.github.io/portfolio/)  
 
